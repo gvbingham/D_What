@@ -1,17 +1,109 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-<title>D-Whatever</title>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<script src="main.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=1">
 <style>
-
+body {
+	background-image:url(images/bas33go.jpg);
+	background-repeat:repeat;
+	background-color:#000;
+	margin:0px;
+	color:lightgrey;
+	font-size:18px;
+}
+input {
+	border:0;
+	background-color:#303030;
+	color:lightgrey;
+	padding-left:5px;
+	font-size:16px;
+}
+.small_side_button {
+	position:absolute;
+	z-index:2;
+	width:50px;
+	height:50px;
+}
+.big_side_button {
+	position:absolute;
+	z-index:2;
+	width:80px;
+	height:80px;
+}
+#appdiv1 {
+	position:absolute;
+	z-index:2;
+	left:50px;
+	top:50px;
+	right:50px;
+	bottom:50px;
+	background-image:url(images/tablebg.png);
+	vertical-align:middle;
+	text-align:center;
+}
+#big_top {
+	top:0px;
+	left:0px;
+	background-color:orange;
+}
+#small_top_left {
+	top:0px;
+	left:120px;
+	background-color:red;
+}
+#small_top_right {
+	top:120px;
+	left:0px;
+	background-color:green;
+}
+#big_bottom {
+	bottom:0px;
+	right:0px;
+	background-color:green;
+}
+#small_bottom_right {
+	bottom:120px;
+	right:0px;
+	background-color:green;
+}
+#small_bottom_left {
+	bottom:0px;
+	right:120px;
+	background-color:green;
+}
 </style>
+<script>
+var dice = {
+	get_d_result : function (num) {
+		return 1 + Math.floor(Math.random() * num);
+	},
+}; 
+var dom = {
+	queue : [], 
+	queue_html : [],
+	calc_queue_items : function () {
+		if (dom.queue[0] != undefined) { 
+			for (var i = 0; i < dom.queue.length; i++) {
+				dom.queue_html.push('<img id="' + dom.queue[i] + '_queue'+ i +'" src="' + dom.queue[i] + '.png"></img>');
+				return 1;
+			}
+		}
+		else {return 0;}
+	},
+	write_queue : function () {
+		document.getElementById("queue_div").innerHTML = dom[calc_queue_items](); 	
+	},
+};
+
 </script>
 </head>
-
 <body>
+<div id="appdiv1"></div>
+<div id="big_top" class="big_side_button"></div>
+<div id="small_top_left" class="small_side_button"></div>
+<div id="small_top_right" class="small_side_button"></div>
+<div id="big_bottom" class="big_side_button"></div>
+<div id="small_bottom_right" class="small_side_button"></div>
+<div id="small_bottom_left" class="small_side_button"></div>
 </body>
-
 </html>
