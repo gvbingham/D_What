@@ -56,7 +56,7 @@ input {
 	left:0px;
 	background-color:green;
 }
-#queue_div {
+#available_dice_div {
 	position:absolute;
 	z-index:2;
 	height:50px;
@@ -89,6 +89,7 @@ var settings = {
 var dom = {
 	queue : [],
 	queue_html : [],	
+	rolled_html : [],
 	total : 0,
 	populate_queue_html : function () {
 		var temp = [];
@@ -114,7 +115,13 @@ var dom = {
 		dom.queue.splice(x, 1);	
 		dom.populate_queue_html();
 	},
-	
+	write_result : function () {
+		var temp = '';
+		for (var i = 0; i < dom.rolled_html.length; i++) {
+			temp  += dom.rolled_html[i];		
+		};
+		document.getElementById("result_div").innerHTML = temp; 	
+	},
 }
 var dice = {
 	d2 : new proto_die(2),
@@ -125,6 +132,26 @@ var dice = {
 	d12 : new proto_die(12),
 	d20 : new proto_die(20),
 	d100 : new proto_die(100),
+	roll_em : function () {
+		var total = 0;
+		var result = 0;
+		dom.rolled_html = [];
+		for (var i = 0; i < dom.queue.length; i++) {
+			var die_value = dom.queue[i];
+			result = dice["d"+die_value]["roll"](); 	
+			total += result; 	
+			dom.rolled_html.push('<img id="d' + die_value + '" src="images/d' + die_value + '_' + result + '.png"></img>');
+		}		
+		dom.write_result();
+		return total;
+	},
+	clear_em : function () {
+		dom.queue = [];
+		dom.queue_html = []; 
+		dom.rolled_html = []; 			
+		dom.write_queue();
+		dom.write_result();	
+	}
 }
 function proto_die(value) {
 	this.value = value;
@@ -148,19 +175,38 @@ var layout = {
 	},
 	calcsize : function () {
 		var temp = layout.get_main_width();
-		document.getElementById('queue_div').style.width = temp - 200 + 'px';
+		document.getElementById('available_dice_div').style.width = temp - 200 + 'px';
 	},	
 };
 </script>
 </head>
 <body onload="layout.calcsize();" onResize="layout.calcsize();">
-<div id="queue_div"></div>
-<div id="appdiv1"></div>
+<div id="available_dice_div">
+	<img src="images/2.gif" onclick="dice.d2.add_me();"></img>
+	<img src="images/4.gif" onclick="dice.d4.add_me();"></img>
+	<img src="images/6.gif" onclick="dice.d6.add_me();"></img>
+	<img src="images/8.gif" onclick="dice.d8.add_me();"></img>
+	<img src="images/10.gif" onclick="dice.d10.add_me();"></img>
+	<img src="images/12.gif" onclick="dice.d12.add_me();"></img>
+	<img src="images/20.gif" onclick="dice.d20.add_me();"></img>
+	<img src="images/100.gif" onclick="dice.d100.add_me();"></img>
+</div>
+<div id="appdiv1">
+<div id="queue_main_div"></div>
+	<fieldset>
+		<legend>Dice Queue</legend>	
+		<div id="queue_div"></div>
+	</fieldset>
+	<fieldset>
+		<legend>Results</legend>
+		<div id="result_div"></div>
+	</fieldset>
+</div>
 <div id="big_top" class="big_side_button"></div>
 <div id="small_top_left" class="small_side_button"></div>
 <div id="small_top_right" class="small_side_button"></div>
-<div id="big_bottom" class="big_side_button"></div>
+<div id="big_bottom" class="big_side_button" onclick="dice.roll_em();"></div>
 <div id="small_bottom_right" class="small_side_button"></div>
-<div id="small_bottom_left" class="small_side_button"></div>
+<div id="small_bottom_left" class="small_side_button" onclick="dice.clear_em();"></div>
 </body>
 </html>
