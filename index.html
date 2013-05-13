@@ -56,6 +56,14 @@ input {
 	left:0px;
 	background-color:green;
 }
+#queue_div {
+	position:absolute;
+	z-index:2;
+	height:50px;
+	top:0px;
+	left:180px;
+	background-color:green;
+}
 #big_bottom {
 	bottom:0px;
 	right:0px;
@@ -73,31 +81,80 @@ input {
 }
 </style>
 <script>
-var dice = {
-	get_d_result : function (num) {
-		return 1 + Math.floor(Math.random() * num);
-	},
-}; 
+"use strict";
+var settings = {
+	curve : 0,
+	otherstuff : 0,	
+}
 var dom = {
-	queue : [], 
-	queue_html : [],
-	calc_queue_items : function () {
+	queue : [],
+	queue_html : [],	
+	total : 0,
+	populate_queue_html : function () {
+		var temp = [];
+		dom.queue_html = [];
 		if (dom.queue[0] != undefined) { 
 			for (var i = 0; i < dom.queue.length; i++) {
-				dom.queue_html.push('<img id="' + dom.queue[i] + '_queue'+ i +'" src="' + dom.queue[i] + '.png"></img>');
-				return 1;
+				dom.queue_html.push('<img id="' + dom.queue[i] + '_queue'+ i +'" src="images/' + dom.queue[i] + '.gif" onclick="dom.remove_me(' + i + ');"></img>');
 			}
+			dom.write_queue();
 		}
-		else {return 0;}
+		else {
+			dom.write_queue();
+		}
 	},
 	write_queue : function () {
-		document.getElementById("queue_div").innerHTML = dom[calc_queue_items](); 	
+		var temp = '';
+		for (var i = 0; i < dom.queue_html.length; i++) {
+			temp  += dom.queue_html[i];		
+		};
+		document.getElementById("queue_div").innerHTML = temp; 	
 	},
-};
+	remove_me : function (x) {
+		dom.queue.splice(x, 1);	
+		dom.populate_queue_html();
+	},
+	
+}
+var dice = {
+	d2 : new proto_die(2),
+	d4 : new proto_die(4),
+	d6 : new proto_die(6),
+	d8 : new proto_die(8),
+	d10 : new proto_die(10),
+	d12 : new proto_die(12),
+	d20 : new proto_die(20),
+	d100 : new proto_die(100),
+}
+function proto_die(value) {
+	this.value = value;
+	this.roll = function () {
+		if (settings.curve == 0) {
+			return 1 + Math.floor(Math.random() * this.value);
+		}
+		else {
+			return 1 + Math.round(Math.random() * this.value);
+		}
+	}
+	this.add_me = function () {
+		dom.queue.push(this.value);
+		dom.populate_queue_html();
+	}
+}
 
+var layout = {
+	get_main_width : function () {
+		return document.getElementById('appdiv1').offsetWidth;
+	},
+	calcsize : function () {
+		var temp = layout.get_main_width();
+		document.getElementById('queue_div').style.width = temp - 200 + 'px';
+	},	
+};
 </script>
 </head>
-<body>
+<body onload="layout.calcsize();" onResize="layout.calcsize();">
+<div id="queue_div"></div>
 <div id="appdiv1"></div>
 <div id="big_top" class="big_side_button"></div>
 <div id="small_top_left" class="small_side_button"></div>
