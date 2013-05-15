@@ -1,11 +1,10 @@
+
 <!DOCTYPE html>
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=1">
 <style>
 body {
-	background-image:url(images/bas33go.jpg);
-	background-repeat:repeat;
 	background-color:#000;
 	margin:0px;
 	color:lightgrey;
@@ -17,6 +16,9 @@ input {
 	color:lightgrey;
 	padding-left:5px;
 	font-size:16px;
+}
+img {
+	cursor:pointer;
 }
 .small_side_button {
 	position:absolute;
@@ -30,6 +32,22 @@ input {
 	width:80px;
 	height:80px;
 }
+.dice_rack {
+	height:45px;
+	width:45px;
+	margin:0px;
+}
+.die_queue {
+	height:35px;
+	width:35px;
+	margin:0px;
+}
+.die_result {
+	height:55px;
+	width:55px;
+	margin:5px;
+}
+
 #appdiv1 {
 	position:absolute;
 	z-index:2;
@@ -37,14 +55,18 @@ input {
 	top:50px;
 	right:50px;
 	bottom:50px;
-	background-image:url(images/tablebg.png);
-	vertical-align:middle;
-	text-align:center;
+	background-color:rgba(0,0,0,0.5);
+	padding-left:10px;
+	padding-right:10px;
 }
 #big_top {
 	top:0px;
 	left:0px;
-	background-color:orange;
+	background-color: rgba(100,100,100,0.9);
+	text-align: center;
+	vertical-align: middle;
+	line-height: 80px;
+	font-size: 1.5em;
 }
 #small_top_left {
 	top:0px;
@@ -62,7 +84,6 @@ input {
 	height:50px;
 	top:0px;
 	left:180px;
-	background-color:green;
 }
 #big_bottom {
 	bottom:0px;
@@ -91,18 +112,22 @@ var dom = {
 	queue_html : [],	
 	rolled_html : [],
 	total : 0,
+	queue_obj : {
+		2:0,
+		4:0,
+		6:0,
+		8:0,
+		10:0,
+		12:0,
+		20:0,
+		100:0,	
+	},
 	populate_queue_html : function () {
-		var temp = [];
 		dom.queue_html = [];
-		if (dom.queue[0] != undefined) { 
-			for (var i = 0; i < dom.queue.length; i++) {
-				dom.queue_html.push('<img id="' + dom.queue[i] + '_queue'+ i +'" src="images/' + dom.queue[i] + '.gif" onclick="dom.remove_me(' + i + ');"></img>');
-			}
-			dom.write_queue();
+		for (var i = 0; i < dom.queue.length; i++) {
+			dom.queue_html.push('<img class="die_queue" id="' + dom.queue[i] + '_queue'+ i +'" src="images/' + dom.queue[i] + '_' + dom.queue[i] +'.svg" onclick="dom.remove_me(' + i + ',' + dom.queue[i]  + ');"></img>');
 		}
-		else {
-			dom.write_queue();
-		}
+		dom.write_queue();
 	},
 	write_queue : function () {
 		var temp = '';
@@ -111,8 +136,9 @@ var dom = {
 		};
 		document.getElementById("queue_div").innerHTML = temp; 	
 	},
-	remove_me : function (x) {
-		dom.queue.splice(x, 1);	
+	remove_me : function (index, type) {
+		dom.queue.splice(index, 1);	
+		dom.queue_obj[type] -= 1;
 		dom.populate_queue_html();
 	},
 	write_result : function () {
@@ -122,6 +148,9 @@ var dom = {
 		};
 		document.getElementById("result_div").innerHTML = temp; 	
 	},
+	write_total : function (total) {
+		document.getElementById("big_top").innerHTML = total;	
+	}
 }
 var dice = {
 	d2 : new proto_die(2),
@@ -140,17 +169,28 @@ var dice = {
 			var die_value = dom.queue[i];
 			result = dice["d"+die_value]["roll"](); 	
 			total += result; 	
-			dom.rolled_html.push('<img id="d' + die_value + '" src="images/d' + die_value + '_' + result + '.png"></img>');
+			dom.rolled_html.push('<img class="die_result" id="d' + die_value + '" src="images/' + die_value + '_' + result + '.svg"></img>');
 		}		
 		dom.write_result();
-		return total;
+		dom.write_total(total);
 	},
 	clear_em : function () {
 		dom.queue = [];
+		dom.queue_obj = {
+			2:0,
+			4:0,
+			6:0,
+			8:0,
+			10:0,
+			12:0,
+			20:0,
+			100:0
+		};
 		dom.queue_html = []; 
 		dom.rolled_html = []; 			
 		dom.write_queue();
 		dom.write_result();	
+		dom.write_total(0);
 	}
 }
 function proto_die(value) {
@@ -165,6 +205,7 @@ function proto_die(value) {
 	}
 	this.add_me = function () {
 		dom.queue.push(this.value);
+		dom.queue_obj[value] += 1;
 		dom.populate_queue_html();
 	}
 }
@@ -175,21 +216,21 @@ var layout = {
 	},
 	calcsize : function () {
 		var temp = layout.get_main_width();
-		document.getElementById('available_dice_div').style.width = temp - 200 + 'px';
+		//document.getElementById('available_dice_div').style.width = temp - 200 + 'px';
 	},	
 };
 </script>
 </head>
 <body onload="layout.calcsize();" onResize="layout.calcsize();">
 <div id="available_dice_div">
-	<img src="images/2.gif" onclick="dice.d2.add_me();"></img>
-	<img src="images/4.gif" onclick="dice.d4.add_me();"></img>
-	<img src="images/6.gif" onclick="dice.d6.add_me();"></img>
-	<img src="images/8.gif" onclick="dice.d8.add_me();"></img>
-	<img src="images/10.gif" onclick="dice.d10.add_me();"></img>
-	<img src="images/12.gif" onclick="dice.d12.add_me();"></img>
-	<img src="images/20.gif" onclick="dice.d20.add_me();"></img>
-	<img src="images/100.gif" onclick="dice.d100.add_me();"></img>
+	<img class="dice_rack" src="images/2_2.svg" onclick="dice.d2.add_me();"></img>
+	<img class="dice_rack" src="images/4_4.svg" onclick="dice.d4.add_me();"></img>
+	<img class="dice_rack" src="images/6_6.svg" onclick="dice.d6.add_me();"></img>
+	<img class="dice_rack" src="images/8_8.svg" onclick="dice.d8.add_me();"></img>
+	<img class="dice_rack" src="images/10_10.svg" onclick="dice.d10.add_me();"></img>
+	<img class="dice_rack" src="images/12_12.svg" onclick="dice.d12.add_me();"></img>
+	<img class="dice_rack" src="images/20_20.svg" onclick="dice.d20.add_me();"></img>
+	<img class="dice_rack" src="images/100.svg" onclick="dice.d100.add_me();"></img>
 </div>
 <div id="appdiv1">
 <div id="queue_main_div"></div>
