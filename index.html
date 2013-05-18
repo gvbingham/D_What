@@ -1,11 +1,10 @@
-
 <!DOCTYPE html>
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=1">
 <style>
 body {
-	background-color:#000;
+	background-image: url("images/bg.png");
 	margin:0px;
 	color:lightgrey;
 	font-size:18px;
@@ -65,7 +64,7 @@ img {
 	top:50px;
 	right:50px;
 	bottom:50px;
-	background-color:rgba(0,0,0,0.5);
+	background-color:rgba(255,255,255,0.1);
 	padding-left:10px;
 	padding-right:10px;
 }
@@ -77,16 +76,22 @@ img {
 	vertical-align: middle;
 	line-height: 80px;
 	font-size: 1.5em;
+	color:orange;
+	cursor:pointer;
 }
 #small_top_left {
 	top:0px;
 	left:120px;
 	background-color:red;
+	display:none;
+	cursor:pointer;
 }
 #small_top_right {
 	top:120px;
 	left:0px;
 	background-color:green;
+	display:none;
+	cursor:pointer;
 }
 #available_dice_div {
 	position:absolute;
@@ -94,21 +99,30 @@ img {
 	height:50px;
 	top:0px;
 	left:180px;
+	margin-top:5px;
 }
 #big_bottom {
 	bottom:0px;
 	right:0px;
-	background-color:green;
+	background-color: rgba(100,100,100,0.9);
+	background-image: url("images/roll.svg");
+	background-size: 80px 80px;
+	cursor:pointer;
 }
 #small_bottom_right {
 	bottom:120px;
 	right:0px;
 	background-color:green;
+	display:none;
+	cursor:pointer;
 }
 #small_bottom_left {
 	bottom:0px;
 	right:120px;
-	background-color:green;
+	background-color: rgba(100,100,100,0.9);
+	background-image: url("images/clear.svg");
+	background-size: 50px 50px;
+	cursor:pointer;
 }
 </style>
 <script>
@@ -147,7 +161,7 @@ var hand = {
 		this.calc_queue_html();
 		this.write_queue();
 	},
-	empty_hand : function () {
+	empty : function () {
 		this.queue = {
 			2:0,
 			4:0,
@@ -174,39 +188,50 @@ var hand = {
 		var queue_item = 0;
 		for (var i = 0; i < settings.types_num; i++) {
 			if (this.queue[settings.types[i]] != 0) {
-				count = this.queue[settings.types[i]];
+				count=(this.queue[settings.types[i]] < 2) ? "" : 'x' + this.queue[settings.types[i]];
+				//count = 'x' + this.queue[settings.types[i]];
 				queue_item = settings.types[i];
-				this.queue_html.push('<div class="die_queue_div"><img class="die_queue_img" id="' + queue_item + '_queue'+ i +'" src="images/' + queue_item + '_' + queue_item +'.svg" onclick="hand.remove_me('+ i +');"><div class="count_div">x' + count + '</div></img></div>');
+				this.queue_html.push('<div class="die_queue_div"><img class="die_queue_img" src="images/' + queue_item + '_' + queue_item +'.svg" onclick="hand.remove_me('+ queue_item +');"><div class="count_div">' + count + '</div></img></div>');
 			}
 		} 
-		/*for (var i = 0; i < this.queue.length; i++) {
-			if (unique .indexOf(this.queue[i]) == -1) { //unique
-				unique.push(this.queue[i]);
-				var queue_item = this.queue[i];
-				this.queue_html.push('<div class="die_queue_div"><img class="die_queue_img" id="' + queue_item + '_queue'+ i +'" src="images/' + queue_item + '_' + queue_item +'.svg" onclick="hand.remove_me('+ i +');"><div class="count_div">x3</div></img></div>');
-			}
-			else { //not unique
-					
-			}
-		}*/
 		this.write_queue();
 	},
 }
 var table = {
+	total : 0,
 	result_html : [],
-	pop_queue_html : function () {
-	},
-	/*roll_em : function () {
+	roll_em : function () {
+		this.total = 0;
 		this.result_html = [];
-		for (var i = 0; i < dice.types_num; i++) {
-			var current_type = dice.types[i]["value"];
-			var result = dice["d" + dom.queue[i]["roll"]; 	
-			total += result; 	
-			dom.rolled_html.push('<img class="die_result" id="d' + die_value + '" src="images/' + die_value + '_' + result + '.svg"></img>');
+		for (var i = 0; i < settings.types_num; i++) {
+			var current_type = settings.types[i];
+			if (hand.queue[current_type] != 0) {
+				for (var x = 0; x < hand.queue[current_type]; x++) {
+					var result = dice["proto_dice"][current_type].roll(); 	
+					this.total += result; 	
+					this.result_html.push('<img class="die_result" src="images/' + current_type + '_' + result + '.svg"></img>');
+				}
+			}
 		}		
-		dom.write_result();
-		dom.write_total(total);
-	},	*/
+		this.write_result();
+		this.write_total(this.total);
+	},
+	write_result : function () {
+		var temp = '';
+		for (var i = 0; i < this.result_html.length; i++) {
+			temp  += this.result_html[i];		
+		};
+		document.getElementById("result_div").innerHTML = temp; 	
+	},
+	write_total : function (total) {
+		document.getElementById("big_top").innerHTML = total;
+	},
+	empty : function () {
+		this.result_html = [];
+		this.total = 0;
+		this.write_result();	
+		this.write_total('');
+	}
 }
 var dice = {
 	proto_dice : {
@@ -219,8 +244,6 @@ var dice = {
 		20 : new proto_die(20),
 		100 : new proto_die(100),
 	},
-	throw_to_table : function () {
-	},
 }
 var settings = {
 	curve : 0,
@@ -228,126 +251,6 @@ var settings = {
 	types_num : 8,
 	otherstuff : 0,	
 }
-
-
-
-
-/*
-var dom = {
-	queue_html : [],	
-	rolled_html : [],
-	total : 0,
-	queue : {
-		2:0,
-		4:0,
-		6:0,
-		8:0,
-		10:0,
-		12:0,
-		20:0,
-		100:0,	
-	},
-	populate_queue_html : function () {
-		dom.queue_html = [];
-		for (var i = 0; i < dom.queue.length; i++) {
-			dom.queue_html.push('<img class="die_queue" id="' + dom.queue[i] + '_queue'+ i +'" src="images/' + dom.queue[i] + '_' + dom.queue[i] +'.svg" onclick="dom.remove_me(' + dom.queue[i]  + ');"></img>');
-		}
-		dom.write_queue();
-	},
-	write_queue : function () {
-		var temp = '';
-		for (var i = 0; i < dom.queue_html.length; i++) {
-			temp  += dom.queue_html[i];		
-		};
-		document.getElementById("queue_div").innerHTML = temp; 	
-	},
-	remove_me : function (type) {
-		dom.queue[type] -= 1;
-		dom.populate_queue_html();
-	},
-	write_result : function () {
-		var temp = '';
-		for (var i = 0; i < dom.rolled_html.length; i++) {
-			temp  += dom.rolled_html[i];		
-		};
-		document.getElementById("result_div").innerHTML = temp; 	
-	},
-	write_total : function (total) {
-		document.getElementById("big_top").innerHTML = total;	
-	}
-}
-var dice = {
-	const types = Object.keys(dom.queue);
-	const types_num = dom.queue.length;
-	var total = 0;
-	2 : new proto_die(2),
-	4 : new proto_die(4),
-	6 : new proto_die(6),
-	8 : new proto_die(8),
-	10 : new proto_die(10),
-	12 : new proto_die(12),
-	20 : new proto_die(20),
-	100 : new proto_die(100),
-	roll_em : function () {
-		dom.rolled_html = [];
-		for (var i = 0; i < this.types_num; i++) {
-			var current_type = this.types[i]	
-			result = dice[	
-
-
-
-
-			result = dice["d" + dom.queue[]["roll"](); 	
-			total += result; 	
-			dom.rolled_html.push('<img class="die_result" id="d' + die_value + '" src="images/' + die_value + '_' + result + '.svg"></img>');
-		}		
-		dom.write_result();
-		dom.write_total(total);
-	},
-	clear_em : function () {
-		dom.queue_obj = {
-			2:0,
-			4:0,
-			6:0,
-			8:0,
-			10:0,
-			12:0,
-			20:0,
-			100:0
-		};
-		dom.queue_html = []; 
-		dom.rolled_html = []; 			
-		dom.write_queue();
-		dom.write_result();	
-		dom.write_total(0);
-	}
-}
-function proto_die(value) {
-	this.value = value;
-	this.roll = function () {
-		if (settings.curve == 0) {
-			return 1 + Math.floor(Math.random() * this.value);
-		}
-		else {
-			return 1 + Math.round(Math.random() * this.value);
-		}
-	}
-	this.add_me = function () {
-		dom.queue_obj[value] += 1;
-		dom.populate_queue_html();
-	}
-}
-
-var layout = {
-	get_main_width : function () {
-		return document.getElementById('appdiv1').offsetWidth;
-	},
-	calcsize : function () {
-		var temp = layout.get_main_width();
-		//document.getElementById('available_dice_div').style.width = temp - 200 + 'px';
-	},	
-};
-*/
 </script>
 </head>
 <body>
@@ -373,11 +276,11 @@ var layout = {
 		<div id="result_div"></div>
 	</fieldset>
 </div>
-<div id="big_top" class="big_side_button"></div>
+<div id="big_top" class="big_side_button" title="Total">Total</div>
 <div id="small_top_left" class="small_side_button"></div>
 <div id="small_top_right" class="small_side_button"></div>
-<div id="big_bottom" class="big_side_button" onclick="dice.roll_em();"></div>
+<div id="big_bottom" class="big_side_button" title="Roll" onclick="table.roll_em();"></div>
 <div id="small_bottom_right" class="small_side_button"></div>
-<div id="small_bottom_left" class="small_side_button" onclick="dice.clear_em();"></div>
+<div id="small_bottom_left" class="small_side_button" title="clear" onclick="hand.empty(); table.empty();"></div>
 </body>
 </html>
