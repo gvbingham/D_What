@@ -46,10 +46,13 @@ img {
 	position:relative;
 	margin:10px;
 }
-.die_result {
+.die_result, .die_result_reroll {
 	height:55px;
 	width:55px;
 	margin:5px;
+}
+.die_result_reroll {
+	border:1px solid orange;
 }
 .count_div {
 	position:absolute;
@@ -209,12 +212,32 @@ var table = {
 				for (var x = 0; x < hand.queue[current_type]; x++) {
 					var result = dice["proto_dice"][current_type].roll(); 	
 					this.total += result; 	
-					this.result_html.push('<img class="die_result" src="images/' + current_type + '_' + result + '.svg"></img>');
+					if (current_type == result && settings.re_roll_high >= 1) {
+						this.result_html.push('<img class="die_result" onclick="table.re_roll_me(' + current_type + ', ' + this.result_html.length + ')" src="images/' + current_type + '_' + result + '.svg"></img>');
+					}
+					else {
+						this.result_html.push('<img class="die_result" src="images/' + current_type + '_' + result + '.svg"></img>'); 
+					}
 				}
 			}
 		}		
 		this.write_result();
 		this.write_total(this.total);
+	},
+	re_roll_me : function (current_type, index) {
+		this.result_html.splice(index,1, '<img class="die_result" src="images/' + current_type + '_' + current_type + '.svg"></img>')
+		if (settings.re_roll_high == 1 || 2) {
+			var result = dice["proto_dice"][current_type].roll();
+			table.total += result;
+				if (current_type == result && settings.re_roll_high == 2) {
+					this.result_html.push('<img class="die_result_reroll" onclick="table.re_roll_me(' + current_type + ', ' + this.result_html.length + ')" src="images/' + current_type + '_' + result + '.svg"></img>');
+				}
+				else {
+					this.result_html.push('<img class="die_result_reroll" src="images/' + current_type + '_' + result + '.svg"></img>');
+				}
+			this.write_result();
+			this.write_total(this.total);
+		}	
 	},
 	write_result : function () {
 		var temp = '';
@@ -249,7 +272,7 @@ var settings = {
 	curve : 0,
 	types : Object.keys(dice.proto_dice),  
 	types_num : 8,
-	otherstuff : 0,	
+	re_roll_high : 2,	
 }
 </script>
 </head>
