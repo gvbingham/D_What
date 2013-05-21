@@ -8,6 +8,7 @@ body {
 	margin:0px;
 	color:lightgrey;
 	font-size:18px;
+	-webkit-tap-highlight-color:rgba(0,0,0,0);
 }
 input {
 	border:0;
@@ -70,6 +71,7 @@ img {
 	background-color:rgba(255,255,255,0.1);
 	padding-left:10px;
 	padding-right:10px;
+	overflow:auto;
 }
 #big_top {
 	top:0px;
@@ -141,7 +143,16 @@ function proto_die(value) {
 		}
 	}
 }
-
+var session = {
+	random : function () {
+		return Math.floor((1 + Math.random()) * 0x10000)
+		.toString(16)
+		.substring(1);
+	},
+	id : function () {
+		return this.random() + this.random() + '_' + this.random();
+	}	
+}
 var hand = {
 	queue : {
 		2:0,
@@ -204,20 +215,28 @@ var table = {
 	total : 0,
 	result_html : [],
 	roll_em : function () {
-		this.total = 0;
-		this.result_html = [];
+		this.total = 0;//Clear the current Total
+		this.result_html = [];//Clear the current HTML in result_html
 		for (var i = 0; i < settings.types_num; i++) {
-			var current_type = settings.types[i];
+			var current_type = settings.types[i];//Get the current Die value Meaning D6 or D8
 			if (hand.queue[current_type] != 0) {
 				for (var x = 0; x < hand.queue[current_type]; x++) {
 					var result = dice["proto_dice"][current_type].roll(); 	
-					this.total += result; 	
-					if (current_type == result && settings.re_roll_high >= 1) {
-						this.result_html.push('<img class="die_result" onclick="table.re_roll_me(' + current_type + ', ' + this.result_html.length + ')" src="images/' + current_type + '_' + result + '.svg"></img>');
+					var html;
+					var highlight_high = (settings.highlight_high == 1) ? "g" : "";
+					var highlight_low = (settings.highlight_low == 1) ? "r" : "";
+					var re_roll_high = (settings.re_roll_high == 1) ? 'onclick = "table.re_roll_me(' + current_type + ', ' + this.result_html.length + ')"' : '';
+					if (current_type == result) {
+						html = '<img class = "die_result" ' + re_roll_high + ' src="images/' + current_type + '_' + result + highlight_high + '.svg"></img>';
+					}
+					else if (result == 1) {
+						html = '<img class="die_result" src="images/' + current_type + '_' + result + highlight_low + '.svg"></img>'; 
 					}
 					else {
-						this.result_html.push('<img class="die_result" src="images/' + current_type + '_' + result + '.svg"></img>'); 
-					}
+						html = '<img class="die_result" src="images/' + current_type + '_' + result + '.svg"></img>'; 
+					}	
+					this.total += result; 	
+					this.result_html.push(html);
 				}
 			}
 		}		
@@ -226,18 +245,24 @@ var table = {
 	},
 	re_roll_me : function (current_type, index) {
 		this.result_html.splice(index,1, '<img class="die_result" src="images/' + current_type + '_' + current_type + '.svg"></img>')
-		if (settings.re_roll_high == 1 || 2) {
-			var result = dice["proto_dice"][current_type].roll();
-			table.total += result;
-				if (current_type == result && settings.re_roll_high == 2) {
-					this.result_html.push('<img class="die_result_reroll" onclick="table.re_roll_me(' + current_type + ', ' + this.result_html.length + ')" src="images/' + current_type + '_' + result + '.svg"></img>');
-				}
-				else {
-					this.result_html.push('<img class="die_result_reroll" src="images/' + current_type + '_' + result + '.svg"></img>');
-				}
-			this.write_result();
-			this.write_total(this.total);
+		var result = dice["proto_dice"][current_type].roll();
+		var html;
+		var highlight_high = (settings.highlight_high == 1) ? "g" : "";
+		var highlight_low = (settings.highlight_low == 1) ? "r" : "";
+		var re_roll_high = (settings.re_roll_high == 1) ? 'onclick = "table.re_roll_me(' + current_type + ', ' + this.result_html.length + ')"' : '';
+		if (current_type == result) {
+			html = '<img class = "die_result" ' + re_roll_high + ' src="images/' + current_type + '_' + result + highlight_high + '.svg"></img>';
+		}
+		else if (result == 1) {
+			html = '<img class="die_result" src="images/' + current_type + '_' + result + highlight_low + '.svg"></img>'; 
+		}
+		else {
+			html = '<img class="die_result" src="images/' + current_type + '_' + result + '.svg"></img>'; 
 		}	
+		this.total += result; 	
+		this.result_html.push(html);
+		this.write_result();
+		this.write_total(this.total);
 	},
 	write_result : function () {
 		var temp = '';
@@ -272,7 +297,9 @@ var settings = {
 	curve : 0,
 	types : Object.keys(dice.proto_dice),  
 	types_num : 8,
-	re_roll_high : 2,	
+	re_roll_high : 1,	
+	highlight_high : 1,
+	highlight_low : 1,
 }
 </script>
 </head>
@@ -291,7 +318,7 @@ var settings = {
 <div id="appdiv1">
 <div id="queue_main_div"></div>
 	<fieldset>
-		<legend>Dice Queue</legend>	
+		<legend>Queue</legend>	
 		<div id="queue_div"></div>
 	</fieldset>
 	<fieldset>
