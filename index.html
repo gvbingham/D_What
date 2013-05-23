@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html manifest="D_What.appcache">
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=1">
 <style>
@@ -60,6 +60,9 @@ img {
 	top:21px;
 	left:35px;
 	color:orange;
+}
+#svg_preload_div {
+	display:none;
 }
 #appdiv1 {
 	position:absolute;
@@ -289,7 +292,7 @@ var dice = {
 		8 : new proto_die(8),
 		10 : new proto_die(10),
 		12 : new proto_die(12),
-		20 : new proto_die(20),
+	20 : new proto_die(20),
 		100 : new proto_die(100),
 	},
 }
@@ -313,7 +316,7 @@ var settings = {
 	<img class="dice_rack" src="images/10_10.svg" onclick="hand.pick_up(10);"></img>
 	<img class="dice_rack" src="images/12_12.svg" onclick="hand.pick_up(12);"></img>
 	<img class="dice_rack" src="images/20_20.svg" onclick="hand.pick_up(20);"></img>
-	<img class="dice_rack" src="images/100.svg" onclick="hand.pick_up(100);"></img>
+	<img class="dice_rack" src="images/100_100.svg" onclick="hand.pick_up(100);"></img>
 </div>
 <div id="appdiv1">
 <div id="queue_main_div"></div>
@@ -332,5 +335,6 @@ var settings = {
 <div id="big_bottom" class="big_side_button" title="Roll" onclick="table.roll_em();"></div>
 <div id="small_bottom_right" class="small_side_button"></div>
 <div id="small_bottom_left" class="small_side_button" title="clear" onclick="hand.empty(); table.empty();"></div>
+<div id="svg_preload_div"> <img src="images/100_100.svg"/> <img src="images/20_20.svg"/> <img src="images/12_12.svg"/> <img src="images/10_10.svg"/> <img src="images/8_8.svg"/> <img src="images/6_6.svg"/> <img src="images/4_4.svg"/> <img src="images/2_2.svg"/> <img src="images/100_10.svg"/> <img src="images/100_100g.svg"/> <img src="images/100_11.svg"/> <img src="images/100_12.svg"/> <img src="images/100_13.svg"/> <img src="images/100_14.svg"/> <img src="images/100_15.svg"/> <img src="images/100_16.svg"/> <img src="images/100_17.svg"/> <img src="images/100_18.svg"/> <img src="images/100_19.svg"/> <img src="images/100_1r.svg"/> <img src="images/100_1.svg"/> <img src="images/100_20.svg"/> <img src="images/100_21.svg"/> <img src="images/100_22.svg"/> <img src="images/100_23.svg"/> <img src="images/100_24.svg"/> <img src="images/100_25.svg"/> <img src="images/100_26.svg"/> <img src="images/100_27.svg"/> <img src="images/100_28.svg"/> <img src="images/100_29.svg"/> <img src="images/100_2.svg"/> <img src="images/100_30.svg"/> <img src="images/100_31.svg"/> <img src="images/100_32.svg"/> <img src="images/100_33.svg"/> <img src="images/100_34.svg"/> <img src="images/100_35.svg"/> <img src="images/100_36.svg"/> <img src="images/100_37.svg"/> <img src="images/100_38.svg"/> <img src="images/100_39.svg"/> <img src="images/100_3.svg"/> <img src="images/100_40.svg"/> <img src="images/100_41.svg"/> <img src="images/100_42.svg"/> <img src="images/100_43.svg"/> <img src="images/100_44.svg"/> <img src="images/100_45.svg"/> <img src="images/100_46.svg"/> <img src="images/100_47.svg"/> <img src="images/100_48.svg"/> <img src="images/100_49.svg"/> <img src="images/100_4.svg"/> <img src="images/100_50.svg"/> <img src="images/100_51.svg"/> <img src="images/100_52.svg"/> <img src="images/100_53.svg"/> <img src="images/100_54.svg"/> <img src="images/100_55.svg"/> <img src="images/100_56.svg"/> <img src="images/100_57.svg"/> <img src="images/100_58.svg"/> <img src="images/100_59.svg"/> <img src="images/100_5.svg"/> <img src="images/100_60.svg"/> <img src="images/100_61.svg"/> <img src="images/100_62.svg"/> <img src="images/100_63.svg"/> <img src="images/100_64.svg"/> <img src="images/100_65.svg"/> <img src="images/100_66.svg"/> <img src="images/100_67.svg"/> <img src="images/100_68.svg"/> <img src="images/100_69.svg"/> <img src="images/100_6.svg"/> <img src="images/100_70.svg"/> <img src="images/100_71.svg"/> <img src="images/100_72.svg"/> <img src="images/100_73.svg"/> <img src="images/100_74.svg"/> <img src="images/100_75.svg"/> <img src="images/100_76.svg"/> <img src="images/100_77.svg"/> <img src="images/100_78.svg"/> <img src="images/100_79.svg"/> <img src="images/100_7.svg"/> <img src="images/100_80.svg"/> <img src="images/100_81.svg"/> <img src="images/100_82.svg"/> <img src="images/100_83.svg"/> <img src="images/100_84.svg"/> <img src="images/100_85.svg"/> <img src="images/100_86.svg"/> <img src="images/100_87.svg"/> <img src="images/100_88.svg"/> <img src="images/100_89.svg"/> <img src="images/100_8.svg"/> <img src="images/100_90.svg"/> <img src="images/100_91.svg"/> <img src="images/100_92.svg"/> <img src="images/100_93.svg"/> <img src="images/100_94.svg"/> <img src="images/100_95.svg"/> <img src="images/100_96.svg"/> <img src="images/100_97.svg"/> <img src="images/100_98.svg"/> <img src="images/100_99.svg"/> <img src="images/100_9.svg"/> <img src="images/100.svg"/> <img src="images/10_10g.svg"/> <img src="images/10_1r.svg"/> <img src="images/10_1.svg"/> <img src="images/10_2.svg"/> <img src="images/10_3.svg"/> <img src="images/10_4.svg"/> <img src="images/10_5.svg"/> <img src="images/10_6.svg"/> <img src="images/10_7.svg"/> <img src="images/10_8.svg"/> <img src="images/10_9.svg"/> <img src="images/10.svg"/> <img src="images/12_10.svg"/> <img src="images/12_11.svg"/> <img src="images/12_12g.svg"/> <img src="images/12_1r.svg"/> <img src="images/12_1.svg"/> <img src="images/12_2.svg"/> <img src="images/12_3.svg"/> <img src="images/12_4.svg"/> <img src="images/12_5.svg"/> <img src="images/12_6.svg"/> <img src="images/12_7.svg"/> <img src="images/12_8.svg"/> <img src="images/12_9.svg"/> <img src="images/12.svg"/> <img src="images/20_10.svg"/> <img src="images/20_11.svg"/> <img src="images/20_12.svg"/> <img src="images/20_13.svg"/> <img src="images/20_14.svg"/> <img src="images/20_15.svg"/> <img src="images/20_16.svg"/> <img src="images/20_17.svg"/> <img src="images/20_18.svg"/> <img src="images/20_19.svg"/> <img src="images/20_1r.svg"/> <img src="images/20_1.svg"/> <img src="images/20_20g.svg"/> <img src="images/20_2.svg"/> <img src="images/20_3.svg"/> <img src="images/20_4.svg"/> <img src="images/20_5.svg"/> <img src="images/20_6.svg"/> <img src="images/20_7.svg"/> <img src="images/20_8.svg"/> <img src="images/20_9.svg"/> <img src="images/20.svg"/> <img src="images/2_1r.svg"/> <img src="images/2_1.svg"/> <img src="images/2_2g.svg"/> <img src="images/2.svg"/> <img src="images/4_1r.svg"/> <img src="images/4_1.svg"/> <img src="images/4_2.svg"/> <img src="images/4_3.svg"/> <img src="images/4_4g.svg"/> <img src="images/4.svg"/> <img src="images/6_1r.svg"/> <img src="images/6_1.svg"/> <img src="images/6_2.svg"/> <img src="images/6_3.svg"/> <img src="images/6_4.svg"/> <img src="images/6_5.svg"/> <img src="images/6_6g.svg"/> <img src="images/6.svg"/> <img src="images/8_1r.svg"/> <img src="images/8_1.svg"/> <img src="images/8_2.svg"/> <img src="images/8_3.svg"/> <img src="images/8_4.svg"/> <img src="images/8_5.svg"/> <img src="images/8_6.svg"/> <img src="images/8_7.svg"/> <img src="images/8_8g.svg"/> <img src="images/8.svg"/> bas33go.jpg bg.png clear.svg roll.svg </div>
 </body>
 </html>
