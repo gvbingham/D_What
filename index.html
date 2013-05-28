@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html manifest="D_What.appcache">
+<html> <!--manifest="D_What.appcache">-->
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=1">
 <style>
@@ -135,6 +135,9 @@ img {
 </style>
 <script>
 "use strict";
+var get_time_now = function () {
+	return new Date();
+}
 function proto_die(value) {
 	this.value = value;
 	this.roll = function () {
@@ -147,14 +150,26 @@ function proto_die(value) {
 	}
 }
 var session = {
+	date_stamp : (get_time_now().getMonth() + 1) + '_' + get_time_now().getDate(),
 	random : function () {
 		return Math.floor((1 + Math.random()) * 0x10000)
 		.toString(16)
 		.substring(1);
 	},
-	id : function () {
-		return this.random() + this.random() + '_' + this.random();
-	}	
+	set_id : function () {
+		if (localStorage.D_What === undefined) {
+			var new_id = this.random() + this.random() + '_' + this.random();
+			session.rolls.id = new_id;
+		}
+		else {
+			var local_stored_object = JSON.parse(localStorage.D_What);
+			session.rolls.id = local_stored_object.id; 
+		}
+	},
+	store_locally : function () {
+		localStorage.D_What = JSON.stringify(session.rolls); 	
+	},
+	rolls : {}, 
 }
 var hand = {
 	queue : {
@@ -169,6 +184,7 @@ var hand = {
 	},
 	queue_html : [], 
 	pick_up : function (type) {
+		document.getElementById("Pick_Up").play();
 		this.queue[type] += 1;
 		this.calc_queue_html();
 		this.write_queue();
@@ -220,39 +236,53 @@ var table = {
 	roll_em : function () {
 		this.total = 0;//Clear the current Total
 		this.result_html = [];//Clear the current HTML in result_html
+		var time_stamp = get_time_now();
+		time_stamp = time_stamp.getHours() + ':' + time_stamp.getMinutes() + ':' + time_stamp.getSeconds() + '.' + time_stamp.getMilliseconds();
+		session["rolls"][time_stamp] = {};
 		for (var i = 0; i < settings.types_num; i++) {
 			var current_type = settings.types[i];//Get the current Die value Meaning D6 or D8
 			if (hand.queue[current_type] != 0) {
 				for (var x = 0; x < hand.queue[current_type]; x++) {
 					var result = dice["proto_dice"][current_type].roll(); 	
-					var html;
-					var highlight_high = (settings.highlight_high == 1) ? "g" : "";
-					var highlight_low = (settings.highlight_low == 1) ? "r" : "";
-					var re_roll_high = (settings.re_roll_high == 1) ? 'onclick = "table.re_roll_me(' + current_type + ', ' + this.result_html.length + ')"' : '';
-					if (current_type == result) {
-						html = '<img class = "die_result" ' + re_roll_high + ' src="images/' + current_type + '_' + result + highlight_high + '.svg"></img>';
-					}
-					else if (result == 1) {
-						html = '<img class="die_result" src="images/' + current_type + '_' + result + highlight_low + '.svg"></img>'; 
-					}
-					else {
-						html = '<img class="die_result" src="images/' + current_type + '_' + result + '.svg"></img>'; 
+					{ // THIS BLOCK IS OBJ CALCULATING FOR JSON PURPOSES
+						if (session["rolls"][time_stamp][current_type] == undefined) {
+							session["rolls"][time_stamp][current_type] = [];	
+						}
+						session["rolls"][time_stamp][current_type].push(result);	
 					}	
+					{ // THIS BLOCK IS HTML CALCULATING
+						var html;
+						var highlight_high = (settings.highlight_high == 1) ? "g" : "";
+						var highlight_low = (settings.highlight_low == 1) ? "r" : "";
+						var re_roll_high = (settings.re_roll_high == 1) ? 'onclick = "table.re_roll_me(' + current_type + ', ' + this.result_html.length + ', \'' + time_stamp + '\')"' : '';
+						if (current_type == result) {
+							html = '<img class = "die_result" ' + re_roll_high + ' src="images/' + current_type + '_' + result + highlight_high + '.svg"></img>';
+						}
+						else if (result == 1) {
+							html = '<img class="die_result" src="images/' + current_type + '_' + result + highlight_low + '.svg"></img>'; 
+						}
+						else {
+							html = '<img class="die_result" src="images/' + current_type + '_' + result + '.svg"></img>'; 
+						}	
+					}
+					
 					this.total += result; 	
 					this.result_html.push(html);
 				}
 			}
 		}		
+		document.getElementById("dice_reg_roll_05").play();
 		this.write_result();
 		this.write_total(this.total);
 	},
-	re_roll_me : function (current_type, index) {
+	re_roll_me : function (current_type, index, time_stamp) {
 		this.result_html.splice(index,1, '<img class="die_result" src="images/' + current_type + '_' + current_type + '.svg"></img>')
 		var result = dice["proto_dice"][current_type].roll();
+		session["rolls"][time_stamp][current_type].push(result);	
 		var html;
 		var highlight_high = (settings.highlight_high == 1) ? "g" : "";
 		var highlight_low = (settings.highlight_low == 1) ? "r" : "";
-		var re_roll_high = (settings.re_roll_high == 1) ? 'onclick = "table.re_roll_me(' + current_type + ', ' + this.result_html.length + ')"' : '';
+		var re_roll_high = (settings.re_roll_high == 1) ? 'onclick = "table.re_roll_me(' + current_type + ', ' + this.result_html.length + ', \'' + time_stamp + '\')"' : '';
 		if (current_type == result) {
 			html = '<img class = "die_result" ' + re_roll_high + ' src="images/' + current_type + '_' + result + highlight_high + '.svg"></img>';
 		}
@@ -306,7 +336,7 @@ var settings = {
 }
 </script>
 </head>
-<body>
+<body onload="session.set_id();">
 <!--<body onload="layout.calcsize();" onResize="layout.calcsize();">-->
 <div id="available_dice_div">
 	<img class="dice_rack" src="images/2_2.svg" onclick="hand.pick_up(2);"></img>
@@ -335,6 +365,10 @@ var settings = {
 <div id="big_bottom" class="big_side_button" title="Roll" onclick="table.roll_em();"></div>
 <div id="small_bottom_right" class="small_side_button"></div>
 <div id="small_bottom_left" class="small_side_button" title="clear" onclick="hand.empty(); table.empty();"></div>
+
+<audio id="Pick_Up" src="audio/Pick_Up.mp3" preload="auto"></audio>
+<audio id="dice_reg_roll_10" src="audio/dice_reg_roll_10.mp3" preload="auto"></audio>
+<audio id="dice_reg_roll_05" src="audio/dice_reg_roll_05.mp3" preload="auto"></audio>
 <div id="svg_preload_div"> <img src="images/100_100.svg"/> <img src="images/20_20.svg"/> <img src="images/12_12.svg"/> <img src="images/10_10.svg"/> <img src="images/8_8.svg"/> <img src="images/6_6.svg"/> <img src="images/4_4.svg"/> <img src="images/2_2.svg"/> <img src="images/100_10.svg"/> <img src="images/100_100g.svg"/> <img src="images/100_11.svg"/> <img src="images/100_12.svg"/> <img src="images/100_13.svg"/> <img src="images/100_14.svg"/> <img src="images/100_15.svg"/> <img src="images/100_16.svg"/> <img src="images/100_17.svg"/> <img src="images/100_18.svg"/> <img src="images/100_19.svg"/> <img src="images/100_1r.svg"/> <img src="images/100_1.svg"/> <img src="images/100_20.svg"/> <img src="images/100_21.svg"/> <img src="images/100_22.svg"/> <img src="images/100_23.svg"/> <img src="images/100_24.svg"/> <img src="images/100_25.svg"/> <img src="images/100_26.svg"/> <img src="images/100_27.svg"/> <img src="images/100_28.svg"/> <img src="images/100_29.svg"/> <img src="images/100_2.svg"/> <img src="images/100_30.svg"/> <img src="images/100_31.svg"/> <img src="images/100_32.svg"/> <img src="images/100_33.svg"/> <img src="images/100_34.svg"/> <img src="images/100_35.svg"/> <img src="images/100_36.svg"/> <img src="images/100_37.svg"/> <img src="images/100_38.svg"/> <img src="images/100_39.svg"/> <img src="images/100_3.svg"/> <img src="images/100_40.svg"/> <img src="images/100_41.svg"/> <img src="images/100_42.svg"/> <img src="images/100_43.svg"/> <img src="images/100_44.svg"/> <img src="images/100_45.svg"/> <img src="images/100_46.svg"/> <img src="images/100_47.svg"/> <img src="images/100_48.svg"/> <img src="images/100_49.svg"/> <img src="images/100_4.svg"/> <img src="images/100_50.svg"/> <img src="images/100_51.svg"/> <img src="images/100_52.svg"/> <img src="images/100_53.svg"/> <img src="images/100_54.svg"/> <img src="images/100_55.svg"/> <img src="images/100_56.svg"/> <img src="images/100_57.svg"/> <img src="images/100_58.svg"/> <img src="images/100_59.svg"/> <img src="images/100_5.svg"/> <img src="images/100_60.svg"/> <img src="images/100_61.svg"/> <img src="images/100_62.svg"/> <img src="images/100_63.svg"/> <img src="images/100_64.svg"/> <img src="images/100_65.svg"/> <img src="images/100_66.svg"/> <img src="images/100_67.svg"/> <img src="images/100_68.svg"/> <img src="images/100_69.svg"/> <img src="images/100_6.svg"/> <img src="images/100_70.svg"/> <img src="images/100_71.svg"/> <img src="images/100_72.svg"/> <img src="images/100_73.svg"/> <img src="images/100_74.svg"/> <img src="images/100_75.svg"/> <img src="images/100_76.svg"/> <img src="images/100_77.svg"/> <img src="images/100_78.svg"/> <img src="images/100_79.svg"/> <img src="images/100_7.svg"/> <img src="images/100_80.svg"/> <img src="images/100_81.svg"/> <img src="images/100_82.svg"/> <img src="images/100_83.svg"/> <img src="images/100_84.svg"/> <img src="images/100_85.svg"/> <img src="images/100_86.svg"/> <img src="images/100_87.svg"/> <img src="images/100_88.svg"/> <img src="images/100_89.svg"/> <img src="images/100_8.svg"/> <img src="images/100_90.svg"/> <img src="images/100_91.svg"/> <img src="images/100_92.svg"/> <img src="images/100_93.svg"/> <img src="images/100_94.svg"/> <img src="images/100_95.svg"/> <img src="images/100_96.svg"/> <img src="images/100_97.svg"/> <img src="images/100_98.svg"/> <img src="images/100_99.svg"/> <img src="images/100_9.svg"/> <img src="images/100.svg"/> <img src="images/10_10g.svg"/> <img src="images/10_1r.svg"/> <img src="images/10_1.svg"/> <img src="images/10_2.svg"/> <img src="images/10_3.svg"/> <img src="images/10_4.svg"/> <img src="images/10_5.svg"/> <img src="images/10_6.svg"/> <img src="images/10_7.svg"/> <img src="images/10_8.svg"/> <img src="images/10_9.svg"/> <img src="images/10.svg"/> <img src="images/12_10.svg"/> <img src="images/12_11.svg"/> <img src="images/12_12g.svg"/> <img src="images/12_1r.svg"/> <img src="images/12_1.svg"/> <img src="images/12_2.svg"/> <img src="images/12_3.svg"/> <img src="images/12_4.svg"/> <img src="images/12_5.svg"/> <img src="images/12_6.svg"/> <img src="images/12_7.svg"/> <img src="images/12_8.svg"/> <img src="images/12_9.svg"/> <img src="images/12.svg"/> <img src="images/20_10.svg"/> <img src="images/20_11.svg"/> <img src="images/20_12.svg"/> <img src="images/20_13.svg"/> <img src="images/20_14.svg"/> <img src="images/20_15.svg"/> <img src="images/20_16.svg"/> <img src="images/20_17.svg"/> <img src="images/20_18.svg"/> <img src="images/20_19.svg"/> <img src="images/20_1r.svg"/> <img src="images/20_1.svg"/> <img src="images/20_20g.svg"/> <img src="images/20_2.svg"/> <img src="images/20_3.svg"/> <img src="images/20_4.svg"/> <img src="images/20_5.svg"/> <img src="images/20_6.svg"/> <img src="images/20_7.svg"/> <img src="images/20_8.svg"/> <img src="images/20_9.svg"/> <img src="images/20.svg"/> <img src="images/2_1r.svg"/> <img src="images/2_1.svg"/> <img src="images/2_2g.svg"/> <img src="images/2.svg"/> <img src="images/4_1r.svg"/> <img src="images/4_1.svg"/> <img src="images/4_2.svg"/> <img src="images/4_3.svg"/> <img src="images/4_4g.svg"/> <img src="images/4.svg"/> <img src="images/6_1r.svg"/> <img src="images/6_1.svg"/> <img src="images/6_2.svg"/> <img src="images/6_3.svg"/> <img src="images/6_4.svg"/> <img src="images/6_5.svg"/> <img src="images/6_6g.svg"/> <img src="images/6.svg"/> <img src="images/8_1r.svg"/> <img src="images/8_1.svg"/> <img src="images/8_2.svg"/> <img src="images/8_3.svg"/> <img src="images/8_4.svg"/> <img src="images/8_5.svg"/> <img src="images/8_6.svg"/> <img src="images/8_7.svg"/> <img src="images/8_8g.svg"/> <img src="images/8.svg"/> bas33go.jpg bg.png clear.svg roll.svg </div>
 </body>
 </html>
