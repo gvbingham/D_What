@@ -334,6 +334,21 @@ var settings = {
 	highlight_high : 1,
 	highlight_low : 1,
 }
+var server = {
+        putjson : function() {
+                var send = JSON.stringify(session.rolls);
+                var xmlhttp = new XMLHttpRequest();
+                xmlhttp.open("POST","cgi-bin/ajax.pl",true);
+                xmlhttp.setRequestHeader("Content-Type", "text/plain;charset=UTF-8");
+                xmlhttp.send(send);
+        },
+        getjson : function() {
+                var xmlhttp=new XMLHttpRequest();
+                xmlhttp.open("GET","log/" + session.rolls.id + ".json",false);
+                xmlhttp.send();
+                return JSON.parse(xmlhttp.responseText);
+        }
+}
 </script>
 </head>
 <body onload="session.set_id();">
