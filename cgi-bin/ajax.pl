@@ -2,19 +2,24 @@
 use strict;
 use warnings;
 
-
 my $cgihttp = <>;
-my $jsonfile = '';
 my $id = pop_id();
+my $jsonfile = '';
 
 sub pop_id {
-        $cgihttp =~ /"id":"(.*?)",/m;
+        $cgihttp =~ /"id":"(.*?)"/m;
         return $1;
 }
 
+sub pop_json_sans_id {
+	$cgihttp =~ s/,"id":".*?"//g;
+	return $cgihttp;
+}
+
 sub writer {
-	open WFILE, ">/var/www/dice/log/$id.json" or die $!; 
-	print WFILE $cgihttp;
+	open WFILE, ">>/var/www/dice/log/$id.json" or die $!; 
+	print WFILE pop_json_sans_id();
+	print WFILE "\n";
 	close WFILE;
 }
 
@@ -25,19 +30,10 @@ sub reader {
 }
 
 sub httpheader {
-	if ($cgihttp eq $jsonfile) {
-		print "Content-type: text/plain\n";
-		print "Status: 204 No Response\n\n";
-	}
-	else {
-                print "Content-type: text/plain\n";
-                print "Status: 204 No Response\n\n";
-	}
+	print "Content-type: text/plain\n";
+	print "Status: 204 No Response\n\n";
 }
 
-until ($cgihttp eq $jsonfile) {
 writer();
 reader();
-}
-
 httpheader();
