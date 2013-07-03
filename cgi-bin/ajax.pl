@@ -16,6 +16,9 @@ sub pop_json_sans_id {
 	return $cgihttp;
 }
 
+#open my $writer, '>>', '/var/www/dice/log/'
+#print $writer, 'stering';
+
 sub writer {
 	open WFILE, ">>/var/www/dice/log/$id.json" or die $!; 
 	print WFILE pop_json_sans_id();

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html> <!--manifest="D_What.appcache">-->
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=1.1">
+<meta name="viewport" content="target-densitydpi=device-dpi, width=device-width, initial-scale=1, user-scalable=yes">
 <style>
 body {
 	background-image: url("images/bg.png");
@@ -19,6 +19,15 @@ input {
 }
 img {
 	cursor:pointer;
+}
+.svg_container {
+	width:55px;
+	height:55px;
+	float:left;
+}
+.settings_blocks {
+	width:220px;
+	float:left;
 }
 .small_side_button {
 	position:absolute;
@@ -64,7 +73,7 @@ img {
 #svg_preload_div {
 	display:none;
 }
-#appdiv1 {
+#appdiv1, #settings_div {
 	position:absolute;
 	z-index:2;
 	left:50px;
@@ -76,6 +85,11 @@ img {
 	padding-right:10px;
 	overflow:auto;
 }
+#settings_div {
+	z-index:5;
+	display:none;
+	background-color:grey;
+}
 #big_top {
 	top:0px;
 	left:0px;
@@ -86,6 +100,23 @@ img {
 	font-size: 1.5em;
 	color:orange;
 	cursor:pointer;
+}
+#id_div {
+	bottom:0px;
+	left:0px;
+	width:80px;
+	height:80px;
+	background-color: rgba(100,100,100,0.9);
+	text-align: center;
+	vertical-align: middle;
+	line-height: 80px;
+	font-size: 1.5em;
+	color:orange;
+	cursor:pointer;
+	position:absolute;
+	background-image: url("images/settings.svg");
+	background-size: 80px 80px;
+	z-index:10;
 }
 #small_top_left {
 	top:0px;
@@ -135,17 +166,9 @@ img {
 </style>
 <script>
 "use strict";
-function proto_die(value) {
-	this.value = value;
-	this.roll = function () {
-		if (settings.curve == 0) {
-			return 1 + Math.floor(Math.random() * this.value);
-		}
-		else {
-			return 1 + Math.round(Math.random() * this.value);
-		}
-	}
-}
+var $ = function(id) {return document.getElementById(id)};//used to simplify $(); calls.
+var index = 0;
+var total = 0;
 var session = {
 	date_stamp : "",
 	time_stamp : "",
@@ -156,17 +179,15 @@ var session = {
 		.substring(1);
 	},
 	get_id : function () {
-		if (localStorage.D_What === undefined) {
-			var new_id = this.random() + this.random() + '_' + this.random();
+		if (localStorage["id"] === undefined) {
+			var new_id = this.random();
+			localStorage["id"] = new_id;
 			return new_id;
 		}
 		else {
-			var local_stored_object = JSON.parse(localStorage.D_What);
-			return local_stored_object.id; 
+			var old_id = localStorage["id"];
+			return old_id; 
 		}
-	},
-	store_locally : function () {
-		localStorage.D_What = JSON.stringify(session.rolls); 	
 	},
 	get_time_now : function () {
 		return new Date();
@@ -176,177 +197,222 @@ var session = {
 		this.time_stamp = this.time_stamp.getHours() + ':' + this.time_stamp.getMinutes() + ':' + this.time_stamp.getSeconds() + '.' + this.time_stamp.getMilliseconds();
 	},
 	update_date_stamp : function () {
-		this.date_stamp = (get_time_now().getMonth() + 1) + '_' + get_time_now().getDate();	
+		this.date_stamp = (get_time_now().getMonth() + 1) + '_' + get_time_now().getDate();
 	}
 }
-var hand = {
-	queue : {
-		2:0,
-		4:0,
-		6:0,
-		8:0,
-		10:0,
-		12:0,
-		20:0,
-		100:0
-	},
-	queue_html : [], 
-	pick_up : function (type) {
-		document.getElementById("Pick_Up").play();
-		this.queue[type] += 1;
-		this.calc_queue_html();
-		this.write_queue();
-	},
-	remove_me : function (type) {
-		this.queue[type] -= 1;	
-		this.calc_queue_html();
-		this.write_queue();
-	},
-	empty : function () {
-		this.queue = {
-			2:0,
-			4:0,
-			6:0,
-			8:0,
-			10:0,
-			12:0,
-			20:0,
-			100:0
-		};
-		this.calc_queue_html();
-		this.write_queue();
-	},
-	write_queue : function () {
-		var temp = '';
-		for (var i = 0; i < this.queue_html.length; i++) {
-			temp  += this.queue_html[i];		
-		};
-		document.getElementById("queue_div").innerHTML = temp; 	
-	},
-	calc_queue_html : function () {
-		this.queue_html = [];
-		var count = 0;
-		var queue_item = 0;
-		for (var i = 0; i < settings.types_num; i++) {
-			if (this.queue[settings.types[i]] != 0) {
-				count=(this.queue[settings.types[i]] < 2) ? "" : 'x' + this.queue[settings.types[i]];
-				//count = 'x' + this.queue[settings.types[i]];
-				queue_item = settings.types[i];
-				this.queue_html.push('<div class="die_queue_div"><img class="die_queue_img" src="images/' + queue_item + '_' + queue_item +'.svg" onclick="hand.remove_me('+ queue_item +');"><div class="count_div">' + count + '</div></img></div>');
-			}
-		} 
-		this.write_queue();
-	},
-}
-var table = {
-	total : 0,
-	result_html : [],
-	roll_em : function () {
-		{
-		this.total = 0;//Clear the current Total
-		this.result_html = [];//Clear the current HTML in result_html
-		session.update_time_stamp();//update session.time_stamp to something like 8:39:32.281
-		session["rolls"][session.time_stamp] = {};//Create a new branch in the session.rolls with key of new time stamp
-		session["rolls"][session.time_stamp]["id"] = settings.id;//Set id into session.rolls
-		session["rolls"][session.time_stamp]["time"] = session.time_stamp;//Set time into session.rolls
-		}
-		for (var i = 0; i < settings.types_num; i++) {
-			var current_type = settings.types[i];//Get the current Die value Meaning D6 or D8
-			if (hand.queue[current_type] != 0) {
-				for (var x = 0; x < hand.queue[current_type]; x++) {
-					var result = dice["proto_dice"][current_type].roll(); 	
-					{ // THIS BLOCK IS OBJ CALCULATING FOR JSON PURPOSES
-						if (session["rolls"][session.time_stamp][current_type] == undefined) {
-							session["rolls"][session.time_stamp][current_type] = [];	
-						}
-						session["rolls"][session.time_stamp][current_type].push(result);	
-					}	
-					{ // THIS BLOCK IS HTML CALCULATING
-						var html;
-						var highlight_high = (settings.highlight_high == 1) ? "g" : "";
-						var highlight_low = (settings.highlight_low == 1) ? "r" : "";
-						var re_roll_high = (settings.re_roll_high == 1) ? 'onclick = "table.re_roll_me(' + current_type + ', ' + this.result_html.length + ', \'' + session.time_stamp + '\')"' : '';
-						if (current_type == result) {
-							html = '<img class = "die_result" ' + re_roll_high + ' src="images/' + current_type + '_' + result + highlight_high + '.svg"></img>';
-						}
-						else if (result == 1) {
-							html = '<img class="die_result" src="images/' + current_type + '_' + result + highlight_low + '.svg"></img>'; 
-						}
-						else {
-							html = '<img class="die_result" src="images/' + current_type + '_' + result + '.svg"></img>'; 
-						}	
-					}
-					this.total += result; 	
-					this.result_html.push(html);
-				}
-			}
-		}		
-		server.putjson(session["rolls"][session.time_stamp]);
-		document.getElementById("dice_reg_roll_05").play();
-		this.write_result();
-		this.write_total(this.total);
-	},
-	re_roll_me : function (current_type, index, time_stamp) {
-		this.result_html.splice(index,1, '<img class="die_result" src="images/' + current_type + '_' + current_type + '.svg"></img>')
-		var result = dice["proto_dice"][current_type].roll();
-		session["rolls"][session.time_stamp][current_type].push(result);	
-		var html;
-		var highlight_high = (settings.highlight_high == 1) ? "g" : "";
-		var highlight_low = (settings.highlight_low == 1) ? "r" : "";
-		var re_roll_high = (settings.re_roll_high == 1) ? 'onclick = "table.re_roll_me(' + current_type + ', ' + this.result_html.length + ', \'' + session.time_stamp + '\')"' : '';
-		if (current_type == result) {
-			html = '<img class = "die_result" ' + re_roll_high + ' src="images/' + current_type + '_' + result + highlight_high + '.svg"></img>';
-		}
-		else if (result == 1) {
-			html = '<img class="die_result" src="images/' + current_type + '_' + result + highlight_low + '.svg"></img>'; 
-		}
-		else {
-			html = '<img class="die_result" src="images/' + current_type + '_' + result + '.svg"></img>'; 
-		}	
-		this.total += result; 	
-		this.result_html.push(html);
-		this.write_result();
-		this.write_total(this.total);
-		server.putjson(session["rolls"][session.time_stamp]);
-	},
-	write_result : function () {
-		var temp = '';
-		for (var i = 0; i < this.result_html.length; i++) {
-			temp  += this.result_html[i];		
-		};
-		document.getElementById("result_div").innerHTML = temp; 	
-	},
-	write_total : function (total) {
-		document.getElementById("big_top").innerHTML = total;
-	},
-	empty : function () {
-		this.result_html = [];
-		this.total = 0;
-		this.write_result();	
-		this.write_total('');
-	}
-}
-var dice = {
-	proto_dice : {
-		2 : new proto_die(2),
-		4 : new proto_die(4),
-		6 : new proto_die(6),
-		8 : new proto_die(8),
-		10 : new proto_die(10),
-		12 : new proto_die(12),
-	20 : new proto_die(20),
-		100 : new proto_die(100),
-	},
-}
+
 var settings = {
 	id : session.get_id(),
-	curve : 0,
-	types : Object.keys(dice.proto_dice),  
-	types_num : 8,
-	re_roll_high : 1,	
+	random : 'standard',
 	highlight_high : 1,
 	highlight_low : 1,
+	highlight_reroll : 1,
+	re_roll_list : [],
+	re_roll_these : {},
+	re_roll_high : 1,
+	dice_tapping : 0,	
 }
+
+function clear_engine() {
+	total = 0;
+	index = 0;	
+	document.getElementById("result_div").innerHTML = "";
+	document.getElementById("big_top").innerHTML = "Total";
+}
+
+function reroll_me(type, result, index) {
+	$("result_div_" + index).removeAttribute("onclick");
+	$("result_div_" + index).innerHTML = svg_engine(type, result, index, "white", 0); 
+	new proto_die(type);
+}
+
+function svg_engine (die_value, result, index, highlight, reroll) {
+	var onclick = '';
+	if (reroll == 1) {
+		var onclick = ' onClick="reroll_me('+die_value+', '+result+', '+index+');" ';
+	}
+	if (die_value == 2) { 
+		return '<div class="svg_container" id="result_div_'+index+'" '+onclick+'><svg version="1.1" id="svg'+index+'" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><ellipse transform="matrix(0.7193 0.6947 -0.6947 0.7193 150.6956 -56.9414)" stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" cx="145.809" cy="158.006" rx="171.516" ry="98.164"/><ellipse transform="matrix(0.7193 0.6947 -0.6947 0.7193 144.9006 -69.9506)" stroke="'+highlight+'" stroke-width="4" stroke-miterlimit="10" cx="159.01" cy="144.33" rx="171.513" ry="98.161"/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">'+result+'</text></svg></div>';
+	}
+	if (die_value == 4) { 
+		return '<div class="svg_container" id="result_div_'+index+'" '+onclick+'><svg version="1.1" id="svg'+index+'" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="8,275.239 150.306,28.76 292.611,275.239 "/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">'+result+'</text></svg></div>';
+	}
+	if (die_value == 6) { 
+		return '<div class="svg_container" id="result_div_'+index+'" '+onclick+'><svg version="1.1" id="svg'+index+'" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><rect x="12.5" y="12.5" stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" width="276" height="276"/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">'+result+'</text></svg></div>';
+	}
+	if (die_value == 8) { 
+		return '<div class="svg_container" id="result_div_'+index+'" '+onclick+'><svg version="1.1" id="svg'+index+'" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="38.154,204.812 150.979,9.398 263.802,204.812 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="38.154,208.536 150.979,291.669 263.802,208.536 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="267.873,203.952 251.5,80.5 155.048,8.537 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="144.874,9.537 48.422,81.5 32.049,204.952 "/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">'+result+'</text></svg></div>';
+	}
+	if (die_value == 10) { 
+		return '<div class="svg_container" id="result_div_'+index+'" '+onclick+'><svg version="1.1" id="svg'+index+'" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="60.073,185.758 151.473,11.574 242.869,185.758 151.473,251.791 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="245.273,183.75 154.994,13.589 285.682,131.708 284.792,178.068 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="152.979,290.421 152.979,253.891 246.021,186.018 285.048,180.441 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="56.695,184.75 146.977,14.589 16.289,132.708 17.178,179.068 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="149.865,289.914 149.865,254.891 56.822,187.018 17.796,181.441 "/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">'+result+'</text></svg></div>';
+	}
+	if (die_value == 12) { 
+		return '<div class="svg_container" id="result_div_'+index+'" '+onclick+'><svg version="1.1" id="svg'+index+'" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="97.465,224.479 64.364,122.609 151.02,59.651 237.676,122.609 204.575,224.479 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="153.469,57.673 153.469,10.91 234.18,37.008 285.668,106.737 240.124,120.632 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="240.131,123.472 284.604,109.023 284.725,193.852 234.318,264.363 207.027,225.346 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="204.262,226.986 231.75,264.814 151.109,291.143 68.472,264.999 97.148,226.979 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="95.478,225.939 67.998,263.77 18.037,195.213 17.369,108.541 62.383,124.065 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="61.823,120.371 17.354,105.927 67.117,37.227 149.34,9.807 148.484,57.417 "/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">'+result+'</text></svg></div>';
+	}
+	if (die_value == 20) { 
+		return '<div class="svg_container" id="result_div_'+index+'" '+onclick+'><svg version="1.1" id="svg'+index+'" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="67.02,195.016 152.48,46.994 237.939,195.016 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="156.126,44.994 280.529,71.852 241.587,193.016 "/><polyline stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="63.376,193.016 24.432,71.852 148.835,44.994 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="237.943,198.66 152.48,292.967 67.02,198.66 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="154.125,41.349 155.126,3.493 279.529,68.946 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="150.463,42.048 150.275,3.192 26.191,69.246 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="240.473,199.615 274.087,219.098 155.086,293.919 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="243.377,195.648 276.919,215.264 283.215,74.831 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="63.589,198.689 30.013,218.242 149.181,292.809 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="61.34,195.748 27.743,215.27 21.827,74.823 "/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">'+result+'</text></svg></div>';
+	}
+	if (die_value == 100) { 
+		return '<div class="svg_container" id="result_div_'+index+'" '+onclick+'><svg version="1.1" id="svg'+index+'" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><circle stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" cx="154.197" cy="151.097" r="141.5"/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">'+result+'</text></svg></div>';
+	}
+}
+function random_engine (die_type, setting) {
+	if (setting == "curve") {
+		return Math.round(Math.random() * die_type) + 1;
+	}
+	else {
+		return Math.floor(Math.random() * die_type) + 1;
+	}
+	// I need random.org still.
+}
+function index_engine (arg) {
+	if (arg == "clear") {
+		index = 0;
+	}
+	else {
+		index += 1;
+		return index;
+	}
+}
+function highlight_engine (die_value, result) {
+	if (settings["highlight_low"] == 1 && result == 1) {
+		return "red";
+	}
+	else if (settings["highlight_high"] == 1 && die_value == result) {
+		return "green";	
+	}
+	/* I'm broke fix me.
+	else if (settings["highlight_reroll"] == 1) {
+		if (settings.re_roll_high == 1 && die_value == result) {
+			return "green";
+		}
+		else if (settings.re_roll_these[die_value] != undefined && settings.re_roll_these[die_value].indexOf(result) != -1) {
+			return "green";	
+		} 
+	}
+	*/
+	else {return "white";}
+}
+function reroll_engine(die_value, result, index) {
+	if (settings.re_roll_high == 1 && die_value == result) {
+		return 1;	
+	}
+	if (settings.re_roll_these[die_value] != undefined) {
+		if (settings.re_roll_these[die_value].indexOf(result) != -1){
+			return 1;
+		}
+	}
+	else {return 0;}
+}
+
+function proto_die (arg) {
+	this.die_value = arg;
+	this.result = random_engine(this.die_value, settings.random);
+	this.index = index_engine();
+	this.highlight = highlight_engine(this.die_value, this.result);
+	this.reroll = reroll_engine(this.die_value, this.result);
+	this.svg = svg_engine(this.die_value, this.result, this.index, this.highlight, this.reroll); 
+	total += this.result;
+	document.getElementById("big_top").innerHTML = total;
+	document.getElementById("result_div").innerHTML += this.svg;
+}
+
+var settings_controller = {
+	populate_settings : function () {
+		var local = this.get_local();
+		var temp = "";
+		if (local != 0) {
+			settings = local;
+		}
+		//Random
+		$("settings_random_standard").checked = (settings.random == "standard") ? true : false; 
+		$("settings_random_curve").checked = (settings.random == "curve") ? true : false;
+		$("settings_random_org").checked = (settings.random == "org") ? true : false;
+		//Highlight
+		$("settings_highlight_high").checked = (settings.highlight_high == 1) ? true : false;
+		$("settings_highlight_low").checked = (settings.highlight_low == 1) ? true : false;
+		$("settings_highlight_reroll").checked = (settings.highlight_reroll == 1) ? true : false;
+		//Reroll
+		$("settings_reroll_high").checked = (settings.re_roll_high == 1) ? true : false;
+		$("current_id").value = settings.id;
+		//Cheat
+		$("settings_tapping_checkbox").checked = (settings.dice_tapping == 1) ? true : false;
+
+		for (var i = 0; i <= settings.re_roll_list.length - 1; i++) {
+			temp += settings.re_roll_list[i];
+		}
+		$("list_reroll_these").innerHTML = temp;
+	},
+	toggle : function (arg) {
+		if (arg == "high"){
+			settings.highlight_high = (settings.highlight_high == 0) ? 1 : 0;
+		}
+		if (arg == "low"){
+			settings.highlight_low = (settings.highlight_low == 0) ? 1 : 0;
+		}
+		if (arg == "reroll_highlight"){
+			settings.highlight_reroll = (settings.highlight_reroll == 0) ? 1 : 0;
+		}
+		if (arg == "reroll_high"){
+			settings.re_roll_high = (settings.re_roll_high == 0) ? 1 : 0;
+		}
+		if (arg == "standard" || arg == "curve" || arg == "org") {
+			settings.random = arg;
+		}
+		if (arg == "tapping") {
+			settings.dice_tapping = (settings.dice_tapping == 0) ? 1 : 0;
+		}
+		this.put_local();
+	},
+	toggle_display : function () {
+		if ($("settings_div").style.display == "none" || $("settings_div").style.display == "") {
+			$("settings_div").style.display = "block";
+		}
+		else {
+			$("settings_div").style.display = "none"; 
+		}
+		this.put_local();
+	},
+	reroll_options: function (arg) {
+		var html = ["<option>Choose One</option>"];
+		var x = arg.slice(1);
+		for (var i = 0; i < x; i++) {
+			html.push("<option>" + (i + 1) + "</option>");
+		}
+		$("settings_reroll_value").innerHTML = html;
+	},
+	add_reroll : function (type, value) {
+		var type = type.slice(1);
+		if (value == "Choose One") {return};
+		if (settings.re_roll_these[type] == undefined) {
+			settings.re_roll_these[type] = [value];	
+		}
+		else {settings.re_roll_these[type].push(value);}
+		settings.re_roll_list.push("D"+type+" :: "+value+"</br>");
+		this.put_local();
+		this.populate_settings(); 
+	},
+	change_id : function (new_value) {
+		settings.id = new_value;
+		this.put_local();
+	},
+	clear_reroll : function () {
+		settings.re_roll_these = {};
+		settings.re_roll_list = [];
+		$("list_reroll_these").innerHTML = "";
+		this.put_local();
+	},
+	put_local : function () {
+		localStorage["D_What_settings"] = JSON.stringify(settings);
+	},
+	get_local : function () {
+		if (localStorage.D_What_settings != undefined) {
+			return JSON.parse(localStorage.D_What_settings);
+		}	
+		else {return 0;}
+	}, 
+}
+
 var server = {
         putjson : function(arg) {
                 var send = JSON.stringify(arg);
@@ -364,24 +430,20 @@ var server = {
 }
 </script>
 </head>
-<body onload="session.get_id();">
+<body onload="session.get_id(); settings_controller.populate_settings();">
 <!--<body onload="layout.calcsize();" onResize="layout.calcsize();">-->
 <div id="available_dice_div">
-	<img class="dice_rack" src="images/2_2.svg" onclick="hand.pick_up(2);"></img>
-	<img class="dice_rack" src="images/4_4.svg" onclick="hand.pick_up(4);"></img>
-	<img class="dice_rack" src="images/6_6.svg" onclick="hand.pick_up(6);"></img>
-	<img class="dice_rack" src="images/8_8.svg" onclick="hand.pick_up(8);"></img>
-	<img class="dice_rack" src="images/10_10.svg" onclick="hand.pick_up(10);"></img>
-	<img class="dice_rack" src="images/12_12.svg" onclick="hand.pick_up(12);"></img>
-	<img class="dice_rack" src="images/20_20.svg" onclick="hand.pick_up(20);"></img>
-	<img class="dice_rack" src="images/100_100.svg" onclick="hand.pick_up(100);"></img>
+	<img class="dice_rack" src="images/2_2.svg" onclick="new proto_die(2);"></img>
+	<img class="dice_rack" src="images/4_4.svg" onclick="new proto_die(4);"></img>
+	<img class="dice_rack" src="images/6_6.svg" onclick="new proto_die(6);"></img>
+	<img class="dice_rack" src="images/8_8.svg" onclick="new proto_die(8);"></img>
+	<img class="dice_rack" src="images/10_10.svg" onclick="new proto_die(10);"></img>
+	<img class="dice_rack" src="images/12_12.svg" onclick="new proto_die(12);"></img>
+	<img class="dice_rack" src="images/20_20.svg" onclick="new proto_die(20);"></img>
+	<img class="dice_rack" src="images/100_100.svg" onclick="new proto_die(100);"></img>
 </div>
 <div id="appdiv1">
 <div id="queue_main_div"></div>
-	<fieldset>
-		<legend>Queue</legend>	
-		<div id="queue_div"></div>
-	</fieldset>
 	<fieldset>
 		<legend>Results</legend>
 		<div id="result_div"></div>
@@ -390,13 +452,74 @@ var server = {
 <div id="big_top" class="big_side_button" title="Total">Total</div>
 <div id="small_top_left" class="small_side_button"></div>
 <div id="small_top_right" class="small_side_button"></div>
-<div id="big_bottom" class="big_side_button" title="Roll" onclick="table.roll_em();"></div>
+<div id="big_bottom" class="big_side_button" title="Roll" onClick="table.roll_em();"></div>
 <div id="small_bottom_right" class="small_side_button"></div>
-<div id="small_bottom_left" class="small_side_button" title="clear" onclick="hand.empty(); table.empty();"></div>
-
+<div id="small_bottom_left" class="small_side_button" title="clear" onClick="clear_engine();"></div>
+<div id="id_div" onClick="settings_controller.toggle_display();"></div>
+<div id="settings_div">
+    <div id="settings_random_div" class="settings_blocks">
+	<fieldset>
+	<legend>Random Engine</legend>
+        <input id="settings_random_standard" type="radio" name="random" onClick='settings_controller.toggle("standard");'> Standard</input><br>
+        <input id="settings_random_curve" type="radio" name="random" onClick='settings_controller.toggle("curve");'> Curve</input><br>
+        <input id="settings_random_org" type="radio" name="random" onClick='settings_controller.toggle("org");'> Random.org</input>	
+	</fieldset>
+    </div>
+    <div id="settings_highlight_div" class="settings_blocks">
+	<fieldset>
+	<legend>Highlight</legend>
+        <input id="settings_highlight_high" type="checkbox" onClick='settings_controller.toggle("high");'> High</input><br>
+        <input id="settings_highlight_low" type="checkbox" onClick='settings_controller.toggle("low");'> Low</input><br>	
+        <input id="settings_highlight_reroll" type="checkbox" onClick='settings_controller.toggle("reroll_highlight");'> re-rolls</input>	
+	</fieldset>
+    </div>
+    <div id="settings_re-roll_div" class="settings_blocks">
+	<fieldset>
+	<legend>Re-Roll</legend>
+        <input id="settings_reroll_high" type="checkbox" onClick='settings_controller.toggle("reroll_high");'> Highest Value</input><br>
+	<fieldset>
+	<legend>
+	Or choose die/dice
+	</legend>
+	<select id="settings_reroll_type" onChange='settings_controller.reroll_options(this.options[this.selectedIndex].text);'>
+	  <option value="D2" selected>D2</option>
+	  <option value="D4">D4</option>
+	  <option value="D6">D6</option>
+	  <option value="D8">D8</option>
+	  <option value="D10">D10</option>
+	  <option value="D12">D12</option>
+	  <option value="D20">D20</option>
+	  <option value="D100">D100</option>
+	</select>
+	<select id="settings_reroll_value" onChange='settings_controller.add_reroll($("settings_reroll_type").options[$("settings_reroll_type").selectedIndex].text, this.options[this.selectedIndex].text);'>
+	  <option>Choose One</option>
+	  <option>1</option>
+	  <option>2</option>
+	</select>
+	<button onClick='settings_controller.clear_reroll();'>Clear</button>
+	<hr>
+	<div id="list_reroll_these">
+				
+	</div>
+	</fieldset>
+	</fieldset>
+    </div>
+    <div id="cheat_div" class="settings_blocks">
+	<fieldset>
+		<legend>Cheating</legend>
+		<input id="settings_tapping_checkbox" type="checkbox" onClick='settings_controller.toggle("tapping");'>Dice Tapping</input>
+	</fieldset>
+    </div>
+    <div id="settings_session_div" class="settings_blocks">
+	<fieldset>
+	<legend>Session</legend>
+	Your session ID is: 
+	<input id="current_id" title="Current ID" type="text" onChange='settings_controller.change_id(this.value);'></input>
+	</fieldset>
+    </div>
+</div>
 <audio id="Pick_Up" src="audio/Pick_Up.mp3" preload="auto"></audio>
 <audio id="dice_reg_roll_10" src="audio/dice_reg_roll_10.mp3" preload="auto"></audio>
 <audio id="dice_reg_roll_05" src="audio/dice_reg_roll_05.mp3" preload="auto"></audio>
-<div id="svg_preload_div"> <img src="images/100_100.svg"/> <img src="images/20_20.svg"/> <img src="images/12_12.svg"/> <img src="images/10_10.svg"/> <img src="images/8_8.svg"/> <img src="images/6_6.svg"/> <img src="images/4_4.svg"/> <img src="images/2_2.svg"/> <img src="images/100_10.svg"/> <img src="images/100_100g.svg"/> <img src="images/100_11.svg"/> <img src="images/100_12.svg"/> <img src="images/100_13.svg"/> <img src="images/100_14.svg"/> <img src="images/100_15.svg"/> <img src="images/100_16.svg"/> <img src="images/100_17.svg"/> <img src="images/100_18.svg"/> <img src="images/100_19.svg"/> <img src="images/100_1r.svg"/> <img src="images/100_1.svg"/> <img src="images/100_20.svg"/> <img src="images/100_21.svg"/> <img src="images/100_22.svg"/> <img src="images/100_23.svg"/> <img src="images/100_24.svg"/> <img src="images/100_25.svg"/> <img src="images/100_26.svg"/> <img src="images/100_27.svg"/> <img src="images/100_28.svg"/> <img src="images/100_29.svg"/> <img src="images/100_2.svg"/> <img src="images/100_30.svg"/> <img src="images/100_31.svg"/> <img src="images/100_32.svg"/> <img src="images/100_33.svg"/> <img src="images/100_34.svg"/> <img src="images/100_35.svg"/> <img src="images/100_36.svg"/> <img src="images/100_37.svg"/> <img src="images/100_38.svg"/> <img src="images/100_39.svg"/> <img src="images/100_3.svg"/> <img src="images/100_40.svg"/> <img src="images/100_41.svg"/> <img src="images/100_42.svg"/> <img src="images/100_43.svg"/> <img src="images/100_44.svg"/> <img src="images/100_45.svg"/> <img src="images/100_46.svg"/> <img src="images/100_47.svg"/> <img src="images/100_48.svg"/> <img src="images/100_49.svg"/> <img src="images/100_4.svg"/> <img src="images/100_50.svg"/> <img src="images/100_51.svg"/> <img src="images/100_52.svg"/> <img src="images/100_53.svg"/> <img src="images/100_54.svg"/> <img src="images/100_55.svg"/> <img src="images/100_56.svg"/> <img src="images/100_57.svg"/> <img src="images/100_58.svg"/> <img src="images/100_59.svg"/> <img src="images/100_5.svg"/> <img src="images/100_60.svg"/> <img src="images/100_61.svg"/> <img src="images/100_62.svg"/> <img src="images/100_63.svg"/> <img src="images/100_64.svg"/> <img src="images/100_65.svg"/> <img src="images/100_66.svg"/> <img src="images/100_67.svg"/> <img src="images/100_68.svg"/> <img src="images/100_69.svg"/> <img src="images/100_6.svg"/> <img src="images/100_70.svg"/> <img src="images/100_71.svg"/> <img src="images/100_72.svg"/> <img src="images/100_73.svg"/> <img src="images/100_74.svg"/> <img src="images/100_75.svg"/> <img src="images/100_76.svg"/> <img src="images/100_77.svg"/> <img src="images/100_78.svg"/> <img src="images/100_79.svg"/> <img src="images/100_7.svg"/> <img src="images/100_80.svg"/> <img src="images/100_81.svg"/> <img src="images/100_82.svg"/> <img src="images/100_83.svg"/> <img src="images/100_84.svg"/> <img src="images/100_85.svg"/> <img src="images/100_86.svg"/> <img src="images/100_87.svg"/> <img src="images/100_88.svg"/> <img src="images/100_89.svg"/> <img src="images/100_8.svg"/> <img src="images/100_90.svg"/> <img src="images/100_91.svg"/> <img src="images/100_92.svg"/> <img src="images/100_93.svg"/> <img src="images/100_94.svg"/> <img src="images/100_95.svg"/> <img src="images/100_96.svg"/> <img src="images/100_97.svg"/> <img src="images/100_98.svg"/> <img src="images/100_99.svg"/> <img src="images/100_9.svg"/> <img src="images/100.svg"/> <img src="images/10_10g.svg"/> <img src="images/10_1r.svg"/> <img src="images/10_1.svg"/> <img src="images/10_2.svg"/> <img src="images/10_3.svg"/> <img src="images/10_4.svg"/> <img src="images/10_5.svg"/> <img src="images/10_6.svg"/> <img src="images/10_7.svg"/> <img src="images/10_8.svg"/> <img src="images/10_9.svg"/> <img src="images/10.svg"/> <img src="images/12_10.svg"/> <img src="images/12_11.svg"/> <img src="images/12_12g.svg"/> <img src="images/12_1r.svg"/> <img src="images/12_1.svg"/> <img src="images/12_2.svg"/> <img src="images/12_3.svg"/> <img src="images/12_4.svg"/> <img src="images/12_5.svg"/> <img src="images/12_6.svg"/> <img src="images/12_7.svg"/> <img src="images/12_8.svg"/> <img src="images/12_9.svg"/> <img src="images/12.svg"/> <img src="images/20_10.svg"/> <img src="images/20_11.svg"/> <img src="images/20_12.svg"/> <img src="images/20_13.svg"/> <img src="images/20_14.svg"/> <img src="images/20_15.svg"/> <img src="images/20_16.svg"/> <img src="images/20_17.svg"/> <img src="images/20_18.svg"/> <img src="images/20_19.svg"/> <img src="images/20_1r.svg"/> <img src="images/20_1.svg"/> <img src="images/20_20g.svg"/> <img src="images/20_2.svg"/> <img src="images/20_3.svg"/> <img src="images/20_4.svg"/> <img src="images/20_5.svg"/> <img src="images/20_6.svg"/> <img src="images/20_7.svg"/> <img src="images/20_8.svg"/> <img src="images/20_9.svg"/> <img src="images/20.svg"/> <img src="images/2_1r.svg"/> <img src="images/2_1.svg"/> <img src="images/2_2g.svg"/> <img src="images/2.svg"/> <img src="images/4_1r.svg"/> <img src="images/4_1.svg"/> <img src="images/4_2.svg"/> <img src="images/4_3.svg"/> <img src="images/4_4g.svg"/> <img src="images/4.svg"/> <img src="images/6_1r.svg"/> <img src="images/6_1.svg"/> <img src="images/6_2.svg"/> <img src="images/6_3.svg"/> <img src="images/6_4.svg"/> <img src="images/6_5.svg"/> <img src="images/6_6g.svg"/> <img src="images/6.svg"/> <img src="images/8_1r.svg"/> <img src="images/8_1.svg"/> <img src="images/8_2.svg"/> <img src="images/8_3.svg"/> <img src="images/8_4.svg"/> <img src="images/8_5.svg"/> <img src="images/8_6.svg"/> <img src="images/8_7.svg"/> <img src="images/8_8g.svg"/> <img src="images/8.svg"/> bas33go.jpg bg.png clear.svg roll.svg </div>
 </body>
 </html>
