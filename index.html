@@ -3,12 +3,45 @@
 <head>
 <meta name="viewport" content="target-densitydpi=device-dpi, width=device-width, initial-scale=1, user-scalable=yes">
 <style>
+@font-face {
+	font-family : Copperplate;
+	src : url("Copperplate.ttc");
+}
+@-webkit-keyframes alert { from {
+	-webkit-transform: scale(2);
+	opacity:1;
+  }
+
+  to {
+	-webkit-transform: scale(0.1);
+	opacity:0;
+  }
+}
+.alert {
+	position:absolute;
+	z-index:200;
+	left:50%;
+	top:50%;
+	width:450px;
+	height:200px;
+	line-height:1;
+	margin-left:-225px;
+	margin-top:-100px;
+	color:red;
+	text-align:center;
+	font-size:1000%;
+	-webkit-animation-duration: 1s;
+	-webkit-animation-name: alert;
+	opacity:0;
+}
+
 body {
 	background-image: url("images/bg.png");
 	margin:0px;
 	color:lightgrey;
 	font-size:18px;
 	-webkit-tap-highlight-color:rgba(0,0,0,0);
+	font-family:Copperplate;
 }
 input {
 	border:0;
@@ -20,10 +53,18 @@ input {
 img {
 	cursor:pointer;
 }
+/*text {
+	stroke:#FFFFFF;
+	stroke-width:5px;
+}*/
+.transparent_bg {
+	background-color:transparent;
+}
 .svg_container {
-	width:55px;
-	height:55px;
+	width:60px;
+	height:60px;
 	float:left;
+	padding:2px;
 }
 .settings_blocks {
 	width:220px;
@@ -46,15 +87,20 @@ img {
 	width:45px;
 	margin:0px;
 }
-.die_queue_img {
+.queue_img {
 	height:35px;
 	width:35px;
 	margin:0px;
 }
-.die_queue_div {
+.queue_div {
 	float:left;
 	position:relative;
-	margin:10px;
+	margin:5px;
+	display:none;
+}
+.queue_count {
+	display:inline;
+	color:orange;
 }
 .die_result, .die_result_reroll {
 	height:55px;
@@ -70,8 +116,17 @@ img {
 	left:35px;
 	color:orange;
 }
+#bottom_slider {
+	position:absolute;
+	bottom:12px;
+	left:90px;
+	right:90px;
+}
 #svg_preload_div {
 	display:none;
+}
+#result_div {
+
 }
 #appdiv1, #settings_div {
 	position:absolute;
@@ -169,7 +224,11 @@ img {
 var $ = function(id) {return document.getElementById(id)};//used to simplify $(); calls.
 var index = 0;
 var total = 0;
-var session = {
+var queue = {2:0,4:0,6:0,8:0,10:0,12:0,20:0,100:0,};
+var types = Object.keys(queue);
+var length = types.length;
+var results = [];
+/*var session = {
 	date_stamp : "",
 	time_stamp : "",
 	rolls : {}, 
@@ -199,34 +258,133 @@ var session = {
 	update_date_stamp : function () {
 		this.date_stamp = (get_time_now().getMonth() + 1) + '_' + get_time_now().getDate();
 	}
-}
+}*/
 
 var settings = {
-	id : session.get_id(),
+	//id : session.get_id(),
 	random : 'standard',
 	highlight_high : 1,
+	highlight_high_color : "#00FF00",
 	highlight_low : 1,
+	highlight_low_color : "#FF0000",
 	highlight_reroll : 1,
+	highlight_reroll_color : "#0000FF",
 	re_roll_list : [],
 	re_roll_these : {},
 	re_roll_high : 1,
 	dice_tapping : 0,	
+	state : "immediate",
+}
+
+function state_engine() {
+	if (settings.state == "immediate") {
+		$("small_bottom_left").style.display = "none";
+		$("queue_field").style.display = "none";
+		$("big_bottom").style.backgroundImage = 'url("images/clear.svg")'; 
+		$("big_bottom").setAttribute("onclick", "clear_engine();"); 
+		for (var i = 0; i <= length - 1; i++) {
+			$("rack_d"+types[i]).setAttribute("onclick", "new proto_die("+types[i]+");");
+		}
+	}
+	else if (settings.state == "queue") {
+		$("small_bottom_left").style.display = "block";
+		$("queue_field").style.display = "block";
+		$("big_bottom").style.backgroundImage = 'url("images/roll.svg")';
+		$("big_bottom").setAttribute("onclick", "queue_roll_engine();"); 
+		for (var i = 0; i <= length - 1; i++) {
+			$("rack_d"+types[i]).setAttribute("onclick", "queue_engine("+types[i]+", \"add\");");
+		}
+	}
+}
+function queue_engine (die_type, action) {
+	console.log("-----------------");
+	console.log("function queue_engine started");
+	console.log("arguments = ("+die_type+", "+action+")");
+	console.log("-----------------");
+	if (action == "add") {
+		$("queue_d"+die_type+"_div").style.display = "block";		
+		var count = parseInt($("queue_d"+die_type+"_count").innerHTML.slice(1));
+		if (count == "" || isNaN(count) == true) {
+			count = 1;
+		}
+		else {count += 1}
+		queue[die_type] += 1;
+		$("queue_d"+die_type+"_count").innerHTML = "x"+count;	
+	}
+	if (action == "remove") {
+		var count = parseInt($("queue_d"+die_type+"_count").innerHTML.slice(1));
+		if (count == "" || isNaN(count) == true || count == 1) {
+			count = 0;
+			$("queue_d"+die_type+"_div").style.display = "none";		
+		}
+		else {count -= 1}
+		queue[die_type] -= 1;
+		$("queue_d"+die_type+"_count").innerHTML = "x"+count;	
+	}
+}
+function queue_roll_engine() {
+	$("result_div").innerHTML = '';
+	total = 0;
+	if (settings.state == "immediate") {
+		for (var i = 0; i <= length - 1; i++) { 
+			for (var count = 1; count <= queue[types[i]]; count++) {
+				new proto_die(types[i]);
+			}
+		}
+	}
+	if (settings.state == "queue") {
+		for (var i = 0; i <= length - 1; i++) { 
+			if (settings.random == "org") {
+				if (queue[types[i]] != 0) {
+					results = random_engine(types[i], queue[types[i]]);
+				}
+				for (var count = 1; count <= queue[types[i]]; count++) {
+					new proto_die(types[i], count - 1);
+				}
+			}
+			else {
+				for (var count = 1; count <= queue[types[i]]; count++) {
+					new proto_die(types[i]);
+				}
+			}
+		}
+	}
+}
+function alert_engine() {
+
 }
 
 function clear_engine() {
+	console.log("-----------------");
+	console.log("function clear_engine started");
+	console.log("arguments = ()");
+	console.log("-----------------");
 	total = 0;
 	index = 0;	
-	document.getElementById("result_div").innerHTML = "";
-	document.getElementById("big_top").innerHTML = "Total";
+	$("result_div").innerHTML = "";
+	$("big_top").innerHTML = "Total";
+	for (var i = 0; i <= length - 1; i++) { 
+		$("queue_d"+types[i]+"_count").innerHTML = "";
+		$("queue_d"+types[i]+"_div").style.display = "none";
+	}
+	queue = {2:0,4:0,6:0,8:0,10:0,12:0,20:0,100:0,}
 }
 
 function reroll_me(type, result, index) {
+	console.log("-----------------");
+	console.log("function reroll_me started");
+	console.log("arguments = ("+type+", "+result+", "+index+")");
+	console.log("-----------------");
 	$("result_div_" + index).removeAttribute("onclick");
 	$("result_div_" + index).innerHTML = svg_engine(type, result, index, "white", 0); 
 	new proto_die(type);
 }
 
 function svg_engine (die_value, result, index, highlight, reroll) {
+	console.log("-----------------");
+	console.log("function svg_engine started");
+	console.log("arguments = ("+die_value+", "+result+", "+index+", "+highlight+", "+reroll+")");
+	console.log("-----------------");
 	var onclick = '';
 	if (reroll == 1) {
 		var onclick = ' onClick="reroll_me('+die_value+', '+result+', '+index+');" ';
@@ -256,16 +414,39 @@ function svg_engine (die_value, result, index, highlight, reroll) {
 		return '<div class="svg_container" id="result_div_'+index+'" '+onclick+'><svg version="1.1" id="svg'+index+'" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><circle stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" cx="154.197" cy="151.097" r="141.5"/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">'+result+'</text></svg></div>';
 	}
 }
-function random_engine (die_type, setting) {
-	if (setting == "curve") {
+function random_engine (die_type, count) {
+	console.log("-----------------");
+	console.log("function random_engine started");
+	console.log("arguments = ("+die_type+", "+count+")");
+	console.log("-----------------");
+	if (settings.random == "curve") {
 		return Math.round(Math.random() * die_type) + 1;
+	}
+	if (settings.random == "org" && count == undefined) {
+                var xmlhttp=new XMLHttpRequest();
+                xmlhttp.open("GET","http://www.random.org/integers/?num=1&min=1&max="+die_type+"&col=1&base=10&format=plain&rnd=new",false);
+                xmlhttp.send();
+		return parseInt(xmlhttp.responseText);
+	}
+	if (settings.random == "org" && count != undefined) {
+                var xmlhttp=new XMLHttpRequest();
+                xmlhttp.open("GET","http://www.random.org/integers/?num="+count+"&min=1&max="+die_type+"&col=1&base=10&format=plain&rnd=new",false);
+                xmlhttp.send();
+		var temp = xmlhttp.responseText.split("\n");
+		for (var q = 0; q <= temp.length - 1; q++) {
+			temp[q] = parseInt(temp[q]);
+		} 
+		return temp;
 	}
 	else {
 		return Math.floor(Math.random() * die_type) + 1;
 	}
-	// I need random.org still.
 }
 function index_engine (arg) {
+	console.log("-----------------");
+	console.log("function index_engine started");
+	console.log("arguments = ("+arg+")");
+	console.log("-----------------");
 	if (arg == "clear") {
 		index = 0;
 	}
@@ -275,46 +456,58 @@ function index_engine (arg) {
 	}
 }
 function highlight_engine (die_value, result) {
+	console.log("-----------------");
+	console.log("function highlight_engine started");
+	console.log("arguments = ("+die_value+", "+result+")");
+	console.log("-----------------");
 	if (settings["highlight_low"] == 1 && result == 1) {
-		return "red";
+		return settings.highlight_low_color;
 	}
-	else if (settings["highlight_high"] == 1 && die_value == result) {
-		return "green";	
+	if (settings["highlight_high"] == 1 && die_value == result) {
+		return settings.highlight_high_color;	
 	}
-	/* I'm broke fix me.
-	else if (settings["highlight_reroll"] == 1) {
+	if (settings["highlight_reroll"] == 1) {
 		if (settings.re_roll_high == 1 && die_value == result) {
-			return "green";
+			return settings.highlight_reroll_color;
 		}
-		else if (settings.re_roll_these[die_value] != undefined && settings.re_roll_these[die_value].indexOf(result) != -1) {
-			return "green";	
+		if (settings.re_roll_these[die_value] != undefined && settings.re_roll_these[die_value].indexOf(result.toString()) != -1) {
+			return settings.highlight_reroll_color;	
 		} 
+		else {return "#FFFFFF";}
 	}
-	*/
-	else {return "white";}
+	else {return "#FFFFFF";}
 }
 function reroll_engine(die_value, result, index) {
+	console.log("-----------------");
+	console.log("function reroll_engine started");
+	console.log("arguments = ("+die_value+", "+result+", "+index+")");
+	console.log("-----------------");
 	if (settings.re_roll_high == 1 && die_value == result) {
 		return 1;	
 	}
 	if (settings.re_roll_these[die_value] != undefined) {
-		if (settings.re_roll_these[die_value].indexOf(result) != -1){
+		if (settings.re_roll_these[die_value].indexOf(result.toString()) != -1){
 			return 1;
 		}
 	}
-	else {return 0;}
+	else {
+		return 0;
+	}
 }
-
-function proto_die (arg) {
+function proto_die (arg, queue) {
+	console.log("-----------------");
+	console.log("function proto_die started");
+	console.log("arguments = ("+arg+")");
+	console.log("-----------------");
 	this.die_value = arg;
-	this.result = random_engine(this.die_value, settings.random);
+	this.result = (queue == undefined) ? random_engine(this.die_value) : results[queue];
 	this.index = index_engine();
 	this.highlight = highlight_engine(this.die_value, this.result);
 	this.reroll = reroll_engine(this.die_value, this.result);
 	this.svg = svg_engine(this.die_value, this.result, this.index, this.highlight, this.reroll); 
 	total += this.result;
-	document.getElementById("big_top").innerHTML = total;
-	document.getElementById("result_div").innerHTML += this.svg;
+	$("result_div").innerHTML += this.svg;
+	$("big_top").innerHTML = total;
 }
 
 var settings_controller = {
@@ -337,6 +530,14 @@ var settings_controller = {
 		$("current_id").value = settings.id;
 		//Cheat
 		$("settings_tapping_checkbox").checked = (settings.dice_tapping == 1) ? true : false;
+		//Color
+		$("settings_highlight_high_color").value = settings.highlight_high_color;
+		$("settings_highlight_low_color").value = settings.highlight_low_color;
+		$("settings_highlight_reroll_color").value = settings.highlight_reroll_color;
+		//State
+		$("settings_state_queue").checked = (settings.state == "queue") ? true : false; 
+		$("settings_state_immediate").checked = (settings.state == "immediate") ? true : false;
+		state_engine();
 
 		for (var i = 0; i <= settings.re_roll_list.length - 1; i++) {
 			temp += settings.re_roll_list[i];
@@ -361,6 +562,22 @@ var settings_controller = {
 		}
 		if (arg == "tapping") {
 			settings.dice_tapping = (settings.dice_tapping == 0) ? 1 : 0;
+		}
+		if (arg == "queue" || arg == "immediate") {
+			settings.state = arg;
+			state_engine();
+		}
+		this.put_local();
+	},
+	color : function (arg) {
+		if (arg == "high") {
+			settings.highlight_high_color = $("settings_highlight_high_color").value;
+		}
+		if (arg == "low") {
+			settings.highlight_low_color = $("settings_highlight_low_color").value;
+		}
+		if (arg == "reroll") {
+			settings.highlight_reroll_color = $("settings_highlight_reroll_color").value;
 		}
 		this.put_local();
 	},
@@ -413,7 +630,7 @@ var settings_controller = {
 	}, 
 }
 
-var server = {
+/*var server = {
         putjson : function(arg) {
                 var send = JSON.stringify(arg);
                 var xmlhttp = new XMLHttpRequest();
@@ -427,36 +644,57 @@ var server = {
                 xmlhttp.send();
                 return JSON.parse(xmlhttp.responseText);
         }
-}
+}*/
 </script>
 </head>
-<body onload="session.get_id(); settings_controller.populate_settings();">
+<body onload="/*session.get_id();*/ settings_controller.populate_settings();">
 <!--<body onload="layout.calcsize();" onResize="layout.calcsize();">-->
 <div id="available_dice_div">
-	<img class="dice_rack" src="images/2_2.svg" onclick="new proto_die(2);"></img>
-	<img class="dice_rack" src="images/4_4.svg" onclick="new proto_die(4);"></img>
-	<img class="dice_rack" src="images/6_6.svg" onclick="new proto_die(6);"></img>
-	<img class="dice_rack" src="images/8_8.svg" onclick="new proto_die(8);"></img>
-	<img class="dice_rack" src="images/10_10.svg" onclick="new proto_die(10);"></img>
-	<img class="dice_rack" src="images/12_12.svg" onclick="new proto_die(12);"></img>
-	<img class="dice_rack" src="images/20_20.svg" onclick="new proto_die(20);"></img>
-	<img class="dice_rack" src="images/100_100.svg" onclick="new proto_die(100);"></img>
+	<img id="rack_d2" class="dice_rack" src="images/2_2.svg" onclick="new proto_die(2);"></img>
+	<img id="rack_d4" class="dice_rack" src="images/4_4.svg" onclick="new proto_die(4);"></img>
+	<img id="rack_d6" class="dice_rack" src="images/6_6.svg" onclick="new proto_die(6);"></img>
+	<img id="rack_d8" class="dice_rack" src="images/8_8.svg" onclick="new proto_die(8);"></img>
+	<img id="rack_d10" class="dice_rack" src="images/10_10.svg" onclick="new proto_die(10);"></img>
+	<img id="rack_d12" class="dice_rack" src="images/12_12.svg" onclick="new proto_die(12);"></img>
+	<img id="rack_d20" class="dice_rack" src="images/20_20.svg" onclick="new proto_die(20);"></img>
+	<img id="rack_d100" class="dice_rack" src="images/100_100.svg" onclick="new proto_die(100);"></img>
 </div>
 <div id="appdiv1">
 <div id="queue_main_div"></div>
-	<fieldset>
-		<legend>Results</legend>
+	<fieldset id="queue_field">
+		<legend>Queue</legend>	
+		<div id="queue_div">
+		<div class="queue_div" id="queue_d2_div"><img class="queue_img" src="images/2_2.svg" onclick='queue_engine(2, "remove");'></img><div class="queue_count" id="queue_d2_count"></div></div>
+		<div class="queue_div" id="queue_d4_div"><img class="queue_img" src="images/4_4.svg" onclick='queue_engine(4, "remove");'></img><div class="queue_count" id="queue_d4_count"></div></div>
+		<div class="queue_div" id="queue_d6_div"><img class="queue_img" src="images/6_6.svg" onclick='queue_engine(6, "remove");'></img><div class="queue_count" id="queue_d6_count"></div></div>
+		<div class="queue_div" id="queue_d8_div"><img class="queue_img" src="images/8_8.svg" onclick='queue_engine(8, "remove");'></img><div class="queue_count" id="queue_d8_count"></div></div>
+		<div class="queue_div" id="queue_d10_div"><img class="queue_img" src="images/10_10.svg" onclick='queue_engine(10, "remove");'></img><div class="queue_count" id="queue_d10_count"></div></div>
+		<div class="queue_div" id="queue_d12_div"><img class="queue_img" src="images/12_12.svg" onclick='queue_engine(12, "remove");'></img><div class="queue_count" id="queue_d12_count"></div></div>
+		<div class="queue_div" id="queue_d20_div"><img class="queue_img" src="images/20_20.svg" onclick='queue_engine(20, "remove");'></img><div class="queue_count" id="queue_d20_count"></div></div>
+		<div class="queue_div" id="queue_d100_div"><img class="queue_img" src="images/100_100.svg" onclick='queue_engine(100, "remove");'></img><div class="queue_count" id="queue_d100_count"></div></div>
+		</div>
+	</fieldset>
+	<fieldset id="result_field">
+		<legend>Result</legend>	
 		<div id="result_div"></div>
 	</fieldset>
 </div>
 <div id="big_top" class="big_side_button" title="Total">Total</div>
 <div id="small_top_left" class="small_side_button"></div>
 <div id="small_top_right" class="small_side_button"></div>
-<div id="big_bottom" class="big_side_button" title="Roll" onClick="table.roll_em();"></div>
+<div id="big_bottom" class="big_side_button" title="Roll" onclick=""></div>
 <div id="small_bottom_right" class="small_side_button"></div>
 <div id="small_bottom_left" class="small_side_button" title="clear" onClick="clear_engine();"></div>
 <div id="id_div" onClick="settings_controller.toggle_display();"></div>
+<div id="bottom_slider"><input type="range" min="1" max="10" step="1" style="width:100%; padding:0;"></input></div>
 <div id="settings_div">
+    <div id="settings_random_div" class="settings_blocks">
+	<fieldset>
+	<legend>Program State</legend>
+        <input id="settings_state_queue" type="radio" name="state" onClick='settings_controller.toggle("queue");'> Queue the Dice</input><br>
+        <input id="settings_state_immediate" type="radio" name="state" onClick='settings_controller.toggle("immediate");'> Roll Imeediately</input><br>
+	</fieldset>
+    </div>
     <div id="settings_random_div" class="settings_blocks">
 	<fieldset>
 	<legend>Random Engine</legend>
@@ -468,9 +706,9 @@ var server = {
     <div id="settings_highlight_div" class="settings_blocks">
 	<fieldset>
 	<legend>Highlight</legend>
-        <input id="settings_highlight_high" type="checkbox" onClick='settings_controller.toggle("high");'> High</input><br>
-        <input id="settings_highlight_low" type="checkbox" onClick='settings_controller.toggle("low");'> Low</input><br>	
-        <input id="settings_highlight_reroll" type="checkbox" onClick='settings_controller.toggle("reroll_highlight");'> re-rolls</input>	
+        <input id="settings_highlight_high" type="checkbox" onClick='settings_controller.toggle("high");'> High</input><input class="transparent_bg" id="settings_highlight_high_color" type="color" onChange='settings_controller.color("high");'></input><br>
+	<input id="settings_highlight_low" type="checkbox" onClick='settings_controller.toggle("low");'> Low</input><input class="transparent_bg" id="settings_highlight_low_color" type="color" onChange='settings_controller.color("low");'></input><br>
+        <input id="settings_highlight_reroll" type="checkbox" onClick='settings_controller.toggle("reroll_highlight");'> re-rolls</input><input class="transparent_bg" id="settings_highlight_reroll_color" type="color" onChange='settings_controller.color("reroll");'></input><br>
 	</fieldset>
     </div>
     <div id="settings_re-roll_div" class="settings_blocks">
@@ -518,6 +756,7 @@ var server = {
 	</fieldset>
     </div>
 </div>
+<!--<div class="alert">TEST</div>-->
 <audio id="Pick_Up" src="audio/Pick_Up.mp3" preload="auto"></audio>
 <audio id="dice_reg_roll_10" src="audio/dice_reg_roll_10.mp3" preload="auto"></audio>
 <audio id="dice_reg_roll_05" src="audio/dice_reg_roll_05.mp3" preload="auto"></audio>
