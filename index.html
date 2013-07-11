@@ -5,7 +5,7 @@
 <style>
 @font-face {
 	font-family : Copperplate;
-	src : url("Copperplate.ttc");
+	src : url("copperplate_becker_bold_cond.ttf");
 }
 @-webkit-keyframes alert { from {
 	-webkit-transform: scale(2);
@@ -50,8 +50,15 @@ input {
 	padding-left:5px;
 	font-size:16px;
 }
-img {
+img, svg{
 	cursor:pointer;
+}
+p {
+	margin-top:0px;
+	margin-bottom:5px;
+}
+.fieldset {
+	min-height:110px;
 }
 /*text {
 	stroke:#FFFFFF;
@@ -69,6 +76,7 @@ img {
 .settings_blocks {
 	width:220px;
 	float:left;
+	height:130px;
 }
 .small_side_button {
 	position:absolute;
@@ -115,6 +123,15 @@ img {
 	top:21px;
 	left:35px;
 	color:orange;
+}
+#tap_die_rack {
+	position: absolute;
+	top: calc(50% - 49px);
+	left: calc(50% - 190.5px);
+	display: none;
+	background-color:rgba(100,100,100,0.9);
+	padding:5px;
+	z-index:100;
 }
 #bottom_slider {
 	position:absolute;
@@ -228,6 +245,10 @@ var queue = {2:0,4:0,6:0,8:0,10:0,12:0,20:0,100:0,};
 var types = Object.keys(queue);
 var length = types.length;
 var results = [];
+var onclick = '';
+var front_div = '';
+var back_div = '';
+var tap_die_value = '';
 /*var session = {
 	date_stamp : "",
 	time_stamp : "",
@@ -325,6 +346,7 @@ function queue_engine (die_type, action) {
 function queue_roll_engine() {
 	$("result_div").innerHTML = '';
 	total = 0;
+	index = 0;
 	if (settings.state == "immediate") {
 		for (var i = 0; i <= length - 1; i++) { 
 			for (var count = 1; count <= queue[types[i]]; count++) {
@@ -350,6 +372,28 @@ function queue_roll_engine() {
 		}
 	}
 }
+
+function tap_engine(die_value, result, index) {
+	console.log("-----------------");
+	console.log("function tap_engine started");
+	console.log("arguments = ("+die_value+", "+result+", "+index+")");
+	console.log("-----------------");
+	$("tap_die_rack").style.display = "none";
+	if (tap_die_value == '') {
+		for (var i = 0; i <= length - 1; i++) { 
+			$("tap_rack_d"+types[i]).setAttribute("onclick", 'tap_die_value = '+types[i]+'; tap_engine('+die_value+', '+result+', '+index+');');
+		}
+		$("tap_die_rack").style.display = "block";
+		return;
+	}
+	if (Math.floor(Math.random() * 10) + 1 <= 10) {
+		total -= result;	
+		$("result_div_" + index).innerHTML = new proto_die(die_value, 0, 1, 1).svg; 
+	}
+	new proto_die(tap_die_value);
+	tap_die_value = '';
+}
+
 function alert_engine() {
 
 }
@@ -375,43 +419,59 @@ function reroll_me(type, result, index) {
 	console.log("function reroll_me started");
 	console.log("arguments = ("+type+", "+result+", "+index+")");
 	console.log("-----------------");
+	var highlight = highlight_engine(type, result);
 	$("result_div_" + index).removeAttribute("onclick");
-	$("result_div_" + index).innerHTML = svg_engine(type, result, index, "white", 0); 
+	$("result_div_" + index).innerHTML = svg_engine(type, result, index, highlight, 0); 
 	new proto_die(type);
 }
-
-function svg_engine (die_value, result, index, highlight, reroll) {
+function div_engine(die_value, result, index, reroll) {
+	if (settings.dice_tapping == 1 && reroll != 1) {
+		onclick = ' onclick="tap_engine('+die_value+', '+result+', '+index+');" ';
+	}
+	else if (reroll == 1) {
+		onclick = ' onclick="reroll_me('+die_value+', '+result+', '+index+');" ';
+	}
+	else {
+		onclick = '';
+	}
+	front_div = '<div class="svg_container" id="result_div_'+index+'" '+onclick+'>';
+	back_div = '</div>';
+}
+function svg_engine (die_value, result, index, highlight, reroll, no_div) {
 	console.log("-----------------");
 	console.log("function svg_engine started");
 	console.log("arguments = ("+die_value+", "+result+", "+index+", "+highlight+", "+reroll+")");
 	console.log("-----------------");
-	var onclick = '';
-	if (reroll == 1) {
-		var onclick = ' onClick="reroll_me('+die_value+', '+result+', '+index+');" ';
+	if (no_div != 1) {
+		div_engine(die_value, result, index, reroll);
+	}
+	else {
+		front_div = '';
+		back_div = ''; 
 	}
 	if (die_value == 2) { 
-		return '<div class="svg_container" id="result_div_'+index+'" '+onclick+'><svg version="1.1" id="svg'+index+'" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><ellipse transform="matrix(0.7193 0.6947 -0.6947 0.7193 150.6956 -56.9414)" stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" cx="145.809" cy="158.006" rx="171.516" ry="98.164"/><ellipse transform="matrix(0.7193 0.6947 -0.6947 0.7193 144.9006 -69.9506)" stroke="'+highlight+'" stroke-width="4" stroke-miterlimit="10" cx="159.01" cy="144.33" rx="171.513" ry="98.161"/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">'+result+'</text></svg></div>';
+		return front_div + '<svg version="1.1" id="svg'+index+'" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><ellipse transform="matrix(0.7193 0.6947 -0.6947 0.7193 150.6956 -56.9414)" stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" cx="145.809" cy="158.006" rx="171.516" ry="98.164"/><ellipse transform="matrix(0.7193 0.6947 -0.6947 0.7193 144.9006 -69.9506)" stroke="'+highlight+'" stroke-width="4" stroke-miterlimit="10" cx="159.01" cy="144.33" rx="171.513" ry="98.161"/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">'+result+'</text></svg>' + back_div;
 	}
 	if (die_value == 4) { 
-		return '<div class="svg_container" id="result_div_'+index+'" '+onclick+'><svg version="1.1" id="svg'+index+'" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="8,275.239 150.306,28.76 292.611,275.239 "/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">'+result+'</text></svg></div>';
+		return front_div + '<svg version="1.1" id="svg'+index+'" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="8,275.239 150.306,28.76 292.611,275.239 "/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">'+result+'</text></svg>' + back_div;
 	}
 	if (die_value == 6) { 
-		return '<div class="svg_container" id="result_div_'+index+'" '+onclick+'><svg version="1.1" id="svg'+index+'" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><rect x="12.5" y="12.5" stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" width="276" height="276"/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">'+result+'</text></svg></div>';
+		return front_div + '<svg version="1.1" id="svg'+index+'" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><rect x="12.5" y="12.5" stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" width="276" height="276"/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">'+result+'</text></svg>' + back_div;
 	}
 	if (die_value == 8) { 
-		return '<div class="svg_container" id="result_div_'+index+'" '+onclick+'><svg version="1.1" id="svg'+index+'" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="38.154,204.812 150.979,9.398 263.802,204.812 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="38.154,208.536 150.979,291.669 263.802,208.536 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="267.873,203.952 251.5,80.5 155.048,8.537 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="144.874,9.537 48.422,81.5 32.049,204.952 "/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">'+result+'</text></svg></div>';
+		return front_div + '<svg version="1.1" id="svg'+index+'" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="38.154,204.812 150.979,9.398 263.802,204.812 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="38.154,208.536 150.979,291.669 263.802,208.536 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="267.873,203.952 251.5,80.5 155.048,8.537 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="144.874,9.537 48.422,81.5 32.049,204.952 "/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">'+result+'</text></svg>' + back_div;
 	}
 	if (die_value == 10) { 
-		return '<div class="svg_container" id="result_div_'+index+'" '+onclick+'><svg version="1.1" id="svg'+index+'" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="60.073,185.758 151.473,11.574 242.869,185.758 151.473,251.791 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="245.273,183.75 154.994,13.589 285.682,131.708 284.792,178.068 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="152.979,290.421 152.979,253.891 246.021,186.018 285.048,180.441 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="56.695,184.75 146.977,14.589 16.289,132.708 17.178,179.068 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="149.865,289.914 149.865,254.891 56.822,187.018 17.796,181.441 "/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">'+result+'</text></svg></div>';
+		return front_div + '<svg version="1.1" id="svg'+index+'" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="60.073,185.758 151.473,11.574 242.869,185.758 151.473,251.791 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="245.273,183.75 154.994,13.589 285.682,131.708 284.792,178.068 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="152.979,290.421 152.979,253.891 246.021,186.018 285.048,180.441 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="56.695,184.75 146.977,14.589 16.289,132.708 17.178,179.068 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="149.865,289.914 149.865,254.891 56.822,187.018 17.796,181.441 "/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">'+result+'</text></svg>' + back_div;
 	}
 	if (die_value == 12) { 
-		return '<div class="svg_container" id="result_div_'+index+'" '+onclick+'><svg version="1.1" id="svg'+index+'" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="97.465,224.479 64.364,122.609 151.02,59.651 237.676,122.609 204.575,224.479 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="153.469,57.673 153.469,10.91 234.18,37.008 285.668,106.737 240.124,120.632 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="240.131,123.472 284.604,109.023 284.725,193.852 234.318,264.363 207.027,225.346 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="204.262,226.986 231.75,264.814 151.109,291.143 68.472,264.999 97.148,226.979 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="95.478,225.939 67.998,263.77 18.037,195.213 17.369,108.541 62.383,124.065 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="61.823,120.371 17.354,105.927 67.117,37.227 149.34,9.807 148.484,57.417 "/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">'+result+'</text></svg></div>';
+		return front_div + '<svg version="1.1" id="svg'+index+'" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="97.465,224.479 64.364,122.609 151.02,59.651 237.676,122.609 204.575,224.479 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="153.469,57.673 153.469,10.91 234.18,37.008 285.668,106.737 240.124,120.632 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="240.131,123.472 284.604,109.023 284.725,193.852 234.318,264.363 207.027,225.346 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="204.262,226.986 231.75,264.814 151.109,291.143 68.472,264.999 97.148,226.979 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="95.478,225.939 67.998,263.77 18.037,195.213 17.369,108.541 62.383,124.065 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="61.823,120.371 17.354,105.927 67.117,37.227 149.34,9.807 148.484,57.417 "/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">'+result+'</text></svg>' + back_div;
 	}
 	if (die_value == 20) { 
-		return '<div class="svg_container" id="result_div_'+index+'" '+onclick+'><svg version="1.1" id="svg'+index+'" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="67.02,195.016 152.48,46.994 237.939,195.016 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="156.126,44.994 280.529,71.852 241.587,193.016 "/><polyline stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="63.376,193.016 24.432,71.852 148.835,44.994 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="237.943,198.66 152.48,292.967 67.02,198.66 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="154.125,41.349 155.126,3.493 279.529,68.946 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="150.463,42.048 150.275,3.192 26.191,69.246 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="240.473,199.615 274.087,219.098 155.086,293.919 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="243.377,195.648 276.919,215.264 283.215,74.831 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="63.589,198.689 30.013,218.242 149.181,292.809 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="61.34,195.748 27.743,215.27 21.827,74.823 "/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">'+result+'</text></svg></div>';
+		return front_div + '<svg version="1.1" id="svg'+index+'" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="67.02,195.016 152.48,46.994 237.939,195.016 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="156.126,44.994 280.529,71.852 241.587,193.016 "/><polyline stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="63.376,193.016 24.432,71.852 148.835,44.994 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="237.943,198.66 152.48,292.967 67.02,198.66 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="154.125,41.349 155.126,3.493 279.529,68.946 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="150.463,42.048 150.275,3.192 26.191,69.246 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="240.473,199.615 274.087,219.098 155.086,293.919 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="243.377,195.648 276.919,215.264 283.215,74.831 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="63.589,198.689 30.013,218.242 149.181,292.809 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="61.34,195.748 27.743,215.27 21.827,74.823 "/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">'+result+'</text></svg>' + back_div;
 	}
 	if (die_value == 100) { 
-		return '<div class="svg_container" id="result_div_'+index+'" '+onclick+'><svg version="1.1" id="svg'+index+'" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><circle stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" cx="154.197" cy="151.097" r="141.5"/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">'+result+'</text></svg></div>';
+		return front_div + '<svg version="1.1" id="svg'+index+'" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><circle stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" cx="154.197" cy="151.097" r="141.5"/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">'+result+'</text></svg>' + back_div;
 	}
 }
 function random_engine (die_type, count) {
@@ -494,19 +554,21 @@ function reroll_engine(die_value, result, index) {
 		return 0;
 	}
 }
-function proto_die (arg, queue) {
+function proto_die (arg, queue, no_div, tap) {
 	console.log("-----------------");
 	console.log("function proto_die started");
 	console.log("arguments = ("+arg+")");
 	console.log("-----------------");
 	this.die_value = arg;
-	this.result = (queue == undefined) ? random_engine(this.die_value) : results[queue];
+	this.result = (queue == undefined || queue == 0) ? random_engine(this.die_value) : results[queue];
 	this.index = index_engine();
 	this.highlight = highlight_engine(this.die_value, this.result);
 	this.reroll = reroll_engine(this.die_value, this.result);
-	this.svg = svg_engine(this.die_value, this.result, this.index, this.highlight, this.reroll); 
+	this.svg = svg_engine(this.die_value, this.result, this.index, this.highlight, this.reroll, this.no_div); 
 	total += this.result;
-	$("result_div").innerHTML += this.svg;
+	if (tap != 1) {
+		$("result_div").innerHTML += this.svg;
+	}
 	$("big_top").innerHTML = total;
 }
 
@@ -684,38 +746,58 @@ var settings_controller = {
 <div id="small_top_right" class="small_side_button"></div>
 <div id="big_bottom" class="big_side_button" title="Roll" onclick=""></div>
 <div id="small_bottom_right" class="small_side_button"></div>
-<div id="small_bottom_left" class="small_side_button" title="clear" onClick="clear_engine();"></div>
-<div id="id_div" onClick="settings_controller.toggle_display();"></div>
+<div id="small_bottom_left" class="small_side_button" title="clear" onclick="clear_engine();"></div>
+<div id="id_div" onclick="settings_controller.toggle_display();"></div>
 <div id="bottom_slider"><input type="range" min="1" max="10" step="1" style="width:100%; padding:0;"></input></div>
 <div id="settings_div">
     <div id="settings_random_div" class="settings_blocks">
-	<fieldset>
+	<fieldset class="fieldset">
 	<legend>Program State</legend>
-        <input id="settings_state_queue" type="radio" name="state" onClick='settings_controller.toggle("queue");'> Queue the Dice</input><br>
-        <input id="settings_state_immediate" type="radio" name="state" onClick='settings_controller.toggle("immediate");'> Roll Imeediately</input><br>
+        <input id="settings_state_queue" type="radio" name="state" onclick='settings_controller.toggle("queue");'> Queue the Dice</input><br>
+        <input id="settings_state_immediate" type="radio" name="state" onclick='settings_controller.toggle("immediate");'> Roll Imediately</input><br>
 	</fieldset>
     </div>
     <div id="settings_random_div" class="settings_blocks">
-	<fieldset>
+	<fieldset class="fieldset">
 	<legend>Random Engine</legend>
-        <input id="settings_random_standard" type="radio" name="random" onClick='settings_controller.toggle("standard");'> Standard</input><br>
-        <input id="settings_random_curve" type="radio" name="random" onClick='settings_controller.toggle("curve");'> Curve</input><br>
-        <input id="settings_random_org" type="radio" name="random" onClick='settings_controller.toggle("org");'> Random.org</input>	
+        <input id="settings_random_standard" type="radio" name="random" onclick='settings_controller.toggle("standard");'> Standard</input><br>
+        <input id="settings_random_curve" type="radio" name="random" onclick='settings_controller.toggle("curve");'> Curve</input><br>
+        <input id="settings_random_org" type="radio" name="random" onclick='settings_controller.toggle("org");'> Random.org</input>	
 	</fieldset>
     </div>
     <div id="settings_highlight_div" class="settings_blocks">
-	<fieldset>
+	<fieldset class="fieldset">
 	<legend>Highlight</legend>
-        <input id="settings_highlight_high" type="checkbox" onClick='settings_controller.toggle("high");'> High</input><input class="transparent_bg" id="settings_highlight_high_color" type="color" onChange='settings_controller.color("high");'></input><br>
-	<input id="settings_highlight_low" type="checkbox" onClick='settings_controller.toggle("low");'> Low</input><input class="transparent_bg" id="settings_highlight_low_color" type="color" onChange='settings_controller.color("low");'></input><br>
-        <input id="settings_highlight_reroll" type="checkbox" onClick='settings_controller.toggle("reroll_highlight");'> re-rolls</input><input class="transparent_bg" id="settings_highlight_reroll_color" type="color" onChange='settings_controller.color("reroll");'></input><br>
+        <input id="settings_highlight_high" type="checkbox" onclick='settings_controller.toggle("high");'> High</input><input class="transparent_bg" id="settings_highlight_high_color" type="color" onChange='settings_controller.color("high");'></input><br>
+	<input id="settings_highlight_low" type="checkbox" onclick='settings_controller.toggle("low");'> Low</input><input class="transparent_bg" id="settings_highlight_low_color" type="color" onChange='settings_controller.color("low");'></input><br>
+        <input id="settings_highlight_reroll" type="checkbox" onclick='settings_controller.toggle("reroll_highlight");'> re-rolls</input><input class="transparent_bg" id="settings_highlight_reroll_color" type="color" onChange='settings_controller.color("reroll");'></input><br>
+	</fieldset>
+    </div>
+    <div id="settings_cheat_div" class="settings_blocks">
+	<fieldset class="fieldset">
+		<legend>Cheating</legend>
+		<input id="settings_tapping_checkbox" type="checkbox" onclick='settings_controller.toggle("tapping");'>Dice Tapping</input>
+	</fieldset>
+    </div>
+    <div id="settings_game_engine_div" class="settings_blocks">
+	<fieldset class="fieldset">
+	<legend>Game Engine</legend>
+        <input id="settings_game_engine" type="radio" name="game" onclick='settings_controller.toggle("none");'> None</input><br>
+        <input id="settings_game_engine" type="radio" name="game" onclick='settings_controller.toggle("immediate");'> World of Darkness</input><br>
+	</fieldset>
+    </div>
+    <div id="settings_session_div" class="settings_blocks">
+	<fieldset class="fieldset">
+	<legend>Session</legend>
+	Your session ID is: 
+	<input id="current_id" title="Current ID" type="text" onChange='settings_controller.change_id(this.value);'></input>
 	</fieldset>
     </div>
     <div id="settings_re-roll_div" class="settings_blocks">
-	<fieldset>
+	<fieldset class="fieldset">
 	<legend>Re-Roll</legend>
-        <input id="settings_reroll_high" type="checkbox" onClick='settings_controller.toggle("reroll_high");'> Highest Value</input><br>
-	<fieldset>
+        <input id="settings_reroll_high" type="checkbox" onclick='settings_controller.toggle("reroll_high");'> Highest Value</input><br>
+	<fieldset class="fieldset">
 	<legend>
 	Or choose die/dice
 	</legend>
@@ -734,7 +816,7 @@ var settings_controller = {
 	  <option>1</option>
 	  <option>2</option>
 	</select>
-	<button onClick='settings_controller.clear_reroll();'>Clear</button>
+	<button onclick='settings_controller.clear_reroll();'>Clear</button>
 	<hr>
 	<div id="list_reroll_these">
 				
@@ -742,20 +824,19 @@ var settings_controller = {
 	</fieldset>
 	</fieldset>
     </div>
-    <div id="cheat_div" class="settings_blocks">
-	<fieldset>
-		<legend>Cheating</legend>
-		<input id="settings_tapping_checkbox" type="checkbox" onClick='settings_controller.toggle("tapping");'>Dice Tapping</input>
-	</fieldset>
-    </div>
-    <div id="settings_session_div" class="settings_blocks">
-	<fieldset>
-	<legend>Session</legend>
-	Your session ID is: 
-	<input id="current_id" title="Current ID" type="text" onChange='settings_controller.change_id(this.value);'></input>
-	</fieldset>
-    </div>
 </div>
+<div id="tap_die_rack">
+	<p>Choose what die to tap with</p>
+	<img id="tap_rack_d2" class="dice_rack" src="images/2_2.svg" onclick=""></img>
+	<img id="tap_rack_d4" class="dice_rack" src="images/4_4.svg" onclick=""></img>
+	<img id="tap_rack_d6" class="dice_rack" src="images/6_6.svg" onclick=""></img>
+	<img id="tap_rack_d8" class="dice_rack" src="images/8_8.svg" onclick=""></img>
+	<img id="tap_rack_d10" class="dice_rack" src="images/10_10.svg" onclick=""></img>
+	<img id="tap_rack_d12" class="dice_rack" src="images/12_12.svg" onclick=""></img>
+	<img id="tap_rack_d20" class="dice_rack" src="images/20_20.svg" onclick=""></img>
+	<img id="tap_rack_d100" class="dice_rack" src="images/100_100.svg" onclick=""></img>
+</div>
+
 <!--<div class="alert">TEST</div>-->
 <audio id="Pick_Up" src="audio/Pick_Up.mp3" preload="auto"></audio>
 <audio id="dice_reg_roll_10" src="audio/dice_reg_roll_10.mp3" preload="auto"></audio>
