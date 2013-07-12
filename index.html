@@ -280,7 +280,6 @@ var tap_die_value = '';
 		this.date_stamp = (get_time_now().getMonth() + 1) + '_' + get_time_now().getDate();
 	}
 }*/
-
 var settings = {
 	//id : session.get_id(),
 	random : 'standard',
@@ -296,7 +295,6 @@ var settings = {
 	dice_tapping : 0,	
 	state : "immediate",
 }
-
 function state_engine() {
 	if (settings.state == "immediate") {
 		$("small_bottom_left").style.display = "none";
@@ -318,10 +316,6 @@ function state_engine() {
 	}
 }
 function queue_engine (die_type, action) {
-	console.log("-----------------");
-	console.log("function queue_engine started");
-	console.log("arguments = ("+die_type+", "+action+")");
-	console.log("-----------------");
 	if (action == "add") {
 		$("queue_d"+die_type+"_div").style.display = "block";		
 		var count = parseInt($("queue_d"+die_type+"_count").innerHTML.slice(1));
@@ -372,12 +366,7 @@ function queue_roll_engine() {
 		}
 	}
 }
-
 function tap_engine(die_value, result, index) {
-	console.log("-----------------");
-	console.log("function tap_engine started");
-	console.log("arguments = ("+die_value+", "+result+", "+index+")");
-	console.log("-----------------");
 	$("tap_die_rack").style.display = "none";
 	if (tap_die_value == '') {
 		for (var i = 0; i <= length - 1; i++) { 
@@ -388,21 +377,20 @@ function tap_engine(die_value, result, index) {
 	}
 	if (Math.floor(Math.random() * 10) + 1 <= 10) {
 		total -= result;	
-		$("result_div_" + index).innerHTML = new proto_die(die_value, 0, 1, 1).svg; 
+		result = random_engine(die_value);
+		var highlight = highlight_engine(die_value, result);
+		var reroll = reroll_engine(die_value, result); 
+		$("result_div_" + index).innerHTML = svg_engine(die_value, result, index, highlight, 0, 1); 
+		if (reroll == 1) {
+			$("result_div_" + index).setAttribute("onclick", 'reroll_me('+die_value+', '+result+', '+index+');');
+		}
 	}
 	new proto_die(tap_die_value);
 	tap_die_value = '';
 }
-
 function alert_engine() {
-
 }
-
 function clear_engine() {
-	console.log("-----------------");
-	console.log("function clear_engine started");
-	console.log("arguments = ()");
-	console.log("-----------------");
 	total = 0;
 	index = 0;	
 	$("result_div").innerHTML = "";
@@ -413,15 +401,10 @@ function clear_engine() {
 	}
 	queue = {2:0,4:0,6:0,8:0,10:0,12:0,20:0,100:0,}
 }
-
 function reroll_me(type, result, index) {
-	console.log("-----------------");
-	console.log("function reroll_me started");
-	console.log("arguments = ("+type+", "+result+", "+index+")");
-	console.log("-----------------");
 	var highlight = highlight_engine(type, result);
 	$("result_div_" + index).removeAttribute("onclick");
-	$("result_div_" + index).innerHTML = svg_engine(type, result, index, highlight, 0); 
+	$("result_div_" + index).innerHTML = svg_engine(type, result, index, highlight, 0, 1); 
 	new proto_die(type);
 }
 function div_engine(die_value, result, index, reroll) {
@@ -438,10 +421,6 @@ function div_engine(die_value, result, index, reroll) {
 	back_div = '</div>';
 }
 function svg_engine (die_value, result, index, highlight, reroll, no_div) {
-	console.log("-----------------");
-	console.log("function svg_engine started");
-	console.log("arguments = ("+die_value+", "+result+", "+index+", "+highlight+", "+reroll+")");
-	console.log("-----------------");
 	if (no_div != 1) {
 		div_engine(die_value, result, index, reroll);
 	}
@@ -475,10 +454,6 @@ function svg_engine (die_value, result, index, highlight, reroll, no_div) {
 	}
 }
 function random_engine (die_type, count) {
-	console.log("-----------------");
-	console.log("function random_engine started");
-	console.log("arguments = ("+die_type+", "+count+")");
-	console.log("-----------------");
 	if (settings.random == "curve") {
 		return Math.round(Math.random() * die_type) + 1;
 	}
@@ -503,10 +478,6 @@ function random_engine (die_type, count) {
 	}
 }
 function index_engine (arg) {
-	console.log("-----------------");
-	console.log("function index_engine started");
-	console.log("arguments = ("+arg+")");
-	console.log("-----------------");
 	if (arg == "clear") {
 		index = 0;
 	}
@@ -516,10 +487,6 @@ function index_engine (arg) {
 	}
 }
 function highlight_engine (die_value, result) {
-	console.log("-----------------");
-	console.log("function highlight_engine started");
-	console.log("arguments = ("+die_value+", "+result+")");
-	console.log("-----------------");
 	if (settings["highlight_low"] == 1 && result == 1) {
 		return settings.highlight_low_color;
 	}
@@ -538,10 +505,6 @@ function highlight_engine (die_value, result) {
 	else {return "#FFFFFF";}
 }
 function reroll_engine(die_value, result, index) {
-	console.log("-----------------");
-	console.log("function reroll_engine started");
-	console.log("arguments = ("+die_value+", "+result+", "+index+")");
-	console.log("-----------------");
 	if (settings.re_roll_high == 1 && die_value == result) {
 		return 1;	
 	}
@@ -555,10 +518,6 @@ function reroll_engine(die_value, result, index) {
 	}
 }
 function proto_die (arg, queue, no_div, tap) {
-	console.log("-----------------");
-	console.log("function proto_die started");
-	console.log("arguments = ("+arg+")");
-	console.log("-----------------");
 	this.die_value = arg;
 	this.result = (queue == undefined || queue == 0) ? random_engine(this.die_value) : results[queue];
 	this.index = index_engine();
@@ -571,7 +530,6 @@ function proto_die (arg, queue, no_div, tap) {
 	}
 	$("big_top").innerHTML = total;
 }
-
 var settings_controller = {
 	populate_settings : function () {
 		var local = this.get_local();
@@ -600,7 +558,6 @@ var settings_controller = {
 		$("settings_state_queue").checked = (settings.state == "queue") ? true : false; 
 		$("settings_state_immediate").checked = (settings.state == "immediate") ? true : false;
 		state_engine();
-
 		for (var i = 0; i <= settings.re_roll_list.length - 1; i++) {
 			temp += settings.re_roll_list[i];
 		}
@@ -691,7 +648,6 @@ var settings_controller = {
 		else {return 0;}
 	}, 
 }
-
 /*var server = {
         putjson : function(arg) {
                 var send = JSON.stringify(arg);
@@ -819,7 +775,6 @@ var settings_controller = {
 	<button onclick='settings_controller.clear_reroll();'>Clear</button>
 	<hr>
 	<div id="list_reroll_these">
-				
 	</div>
 	</fieldset>
 	</fieldset>
@@ -836,7 +791,6 @@ var settings_controller = {
 	<img id="tap_rack_d20" class="dice_rack" src="images/20_20.svg" onclick=""></img>
 	<img id="tap_rack_d100" class="dice_rack" src="images/100_100.svg" onclick=""></img>
 </div>
-
 <!--<div class="alert">TEST</div>-->
 <audio id="Pick_Up" src="audio/Pick_Up.mp3" preload="auto"></audio>
 <audio id="dice_reg_roll_10" src="audio/dice_reg_roll_10.mp3" preload="auto"></audio>
