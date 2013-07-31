@@ -1,695 +1,782 @@
 <!DOCTYPE html>
 <html> <!--manifest="D_What.appcache">-->
 <head>
-<meta name="viewport" content="target-densitydpi=device-dpi, width=device-width, initial-scale=1, user-scalable=yes">
+<meta charset="UTF-8">
+<title>D-What???</title>
+<meta name="viewport" content="width=device-width">
 <style>
 @font-face {
-	font-family : Copperplate;
-	src : url("copperplate_becker_bold_cond.ttf");
+    font-family : 'Copperplate';
+    src : url('copperplate_becker_bold_cond.ttf') format ('truetype');
 }
 @-webkit-keyframes alert { from {
-	-webkit-transform: scale(2);
-	opacity:1;
+    -webkit-transform: scale(2);
+    opacity:1;
   }
 
   to {
-	-webkit-transform: scale(0.1);
-	opacity:0;
+    -webkit-transform: scale(0.1);
+    opacity:0;
   }
 }
 .alert {
-	position:absolute;
-	z-index:200;
-	left:50%;
-	top:50%;
-	width:450px;
-	height:200px;
-	line-height:1;
-	margin-left:-225px;
-	margin-top:-100px;
-	color:red;
-	text-align:center;
-	font-size:1000%;
-	-webkit-animation-duration: 1s;
-	-webkit-animation-name: alert;
-	opacity:0;
+    position:absolute;
+    z-index:200;
+    left:50%;
+    top:50%;
+    width:450px;
+    height:200px;
+    line-height:1;
+    margin-left:-225px;
+    margin-top:-100px;
+    color:red;
+    text-align:center;
+    font-size:1000%;
+    -webkit-animation-duration: 1s;
+    -webkit-animation-name: alert;
+    opacity:0;
 }
 
 body {
-	background-image: url("images/bg.png");
-	margin:0px;
-	color:lightgrey;
-	font-size:18px;
-	-webkit-tap-highlight-color:rgba(0,0,0,0);
-	font-family:Copperplate;
+    background-image: url("images/bg.png");
+    margin:0px;
+    color:lightgrey;
+    font-size:18px;
+    -webkit-tap-highlight-color:rgba(0,0,0,0);
+    font-family:Copperplate;
 }
 input {
-	border:0;
-	background-color:#303030;
-	color:lightgrey;
-	padding-left:5px;
-	font-size:16px;
+    border:0;
+    background-color:#303030;
+    color:lightgrey;
+    padding-left:5px;
+    font-size:16px;
 }
 img, svg{
-	cursor:pointer;
+    cursor:pointer;
 }
 p {
-	margin-top:0px;
-	margin-bottom:5px;
+    margin-top:0px;
+    margin-bottom:5px;
 }
 .fieldset {
-	min-height:110px;
+    min-height:110px;
 }
 /*text {
-	stroke:#FFFFFF;
-	stroke-width:5px;
+    stroke:#FFFFFF;
+    stroke-width:5px;
 }*/
 .transparent_bg {
-	background-color:transparent;
+    background-color:transparent;
 }
 .svg_container {
-	width:60px;
-	height:60px;
-	float:left;
-	padding:2px;
+    width:60px;
+    height:60px;
+    float:left;
+    padding:2px;
 }
 .settings_blocks {
-	width:220px;
-	float:left;
-	height:130px;
+    width:220px;
+    float:left;
+    height:130px;
 }
 .small_side_button {
-	position:absolute;
-	z-index:2;
-	width:50px;
-	height:50px;
+    position:absolute;
+    z-index:2;
+    width:50px;
+    height:50px;
 }
 .big_side_button {
-	position:absolute;
-	z-index:2;
-	width:80px;
-	height:80px;
+    position:absolute;
+    z-index:2;
+    width:80px;
+    height:80px;
 }
 .dice_rack {
-	height:45px;
-	width:45px;
-	margin:0px;
+    height:45px;
+    width:45px;
+    margin:0px;
 }
 .queue_img {
-	height:35px;
-	width:35px;
-	margin:0px;
+    height:35px;
+    width:35px;
+    margin:0px;
 }
 .queue_div {
-	float:left;
-	position:relative;
-	margin:5px;
-	display:none;
+    float:left;
+    position:relative;
+    margin:5px;
+    display:none;
 }
 .queue_count {
-	display:inline;
-	color:orange;
+    display:inline;
+    color:orange;
 }
 .die_result, .die_result_reroll {
-	height:55px;
-	width:55px;
-	margin:5px;
+    height:55px;
+    width:55px;
+    margin:5px;
 }
 .die_result_reroll {
-	border:1px solid orange;
+    border:1px solid orange;
 }
 .count_div {
-	position:absolute;
-	top:21px;
-	left:35px;
-	color:orange;
+    position:absolute;
+    top:21px;
+    left:35px;
+    color:orange;
 }
 #tap_die_rack {
-	position: absolute;
-	top: calc(50% - 49px);
-	left: calc(50% - 190.5px);
-	display: none;
-	background-color:rgba(100,100,100,0.9);
-	padding:5px;
-	z-index:100;
+    position: absolute;
+    top: calc(50% - 49px);
+    left: calc(50% - 190.5px);
+    display: none;
+    background-color:rgba(100,100,100,0.9);
+    padding:5px;
+    z-index:100;
 }
 #bottom_slider {
-	position:absolute;
-	bottom:12px;
-	left:90px;
-	right:90px;
+    position:absolute;
+    bottom:12px;
+    left:180px;
+    right:180px;
 }
 #svg_preload_div {
-	display:none;
+    display:none;
 }
 #result_div {
 
 }
 #appdiv1, #settings_div {
-	position:absolute;
-	z-index:2;
-	left:50px;
-	top:50px;
-	right:50px;
-	bottom:50px;
-	background-color:rgba(255,255,255,0.1);
-	padding-left:10px;
-	padding-right:10px;
-	overflow:auto;
+    position:absolute;
+    z-index:2;
+    left:50px;
+    top:50px;
+    right:50px;
+    bottom:50px;
+    background-color:rgba(255,255,255,0.1);
+    padding-left:10px;
+    padding-right:10px;
+    overflow:auto;
 }
 #settings_div {
-	z-index:5;
-	display:none;
-	background-color:grey;
+    z-index:5;
+    display:none;
+    background-color:grey;
 }
 #big_top {
-	top:0px;
-	left:0px;
-	background-color: rgba(100,100,100,0.9);
-	text-align: center;
-	vertical-align: middle;
-	line-height: 80px;
-	font-size: 1.5em;
-	color:orange;
-	cursor:pointer;
+    top:0px;
+    left:0px;
+    background-color: rgba(100,100,100,0.9);
+    text-align: center;
+    vertical-align: middle;
+    line-height: 80px;
+    font-size: 1.5em;
+    color:orange;
+    cursor:pointer;
 }
 #id_div {
-	bottom:0px;
-	left:0px;
-	width:80px;
-	height:80px;
-	background-color: rgba(100,100,100,0.9);
-	text-align: center;
-	vertical-align: middle;
-	line-height: 80px;
-	font-size: 1.5em;
-	color:orange;
-	cursor:pointer;
-	position:absolute;
-	background-image: url("images/settings.svg");
-	background-size: 80px 80px;
-	z-index:10;
+    bottom:0px;
+    left:0px;
+    width:80px;
+    height:80px;
+    background-color: rgba(100,100,100,0.9);
+    text-align: center;
+    vertical-align: middle;
+    line-height: 80px;
+    font-size: 1.5em;
+    color:orange;
+    cursor:pointer;
+    position:absolute;
+    background-image: url("images/settings.svg");
+    background-size: 80px 80px;
+    z-index:10;
 }
 #small_top_left {
-	top:0px;
-	left:120px;
-	background-color:red;
-	display:none;
-	cursor:pointer;
+    top:0px;
+    left:120px;
+    background-color:red;
+    display:none;
+    cursor:pointer;
 }
 #small_top_right {
-	top:120px;
-	left:0px;
-	background-color:green;
-	display:none;
-	cursor:pointer;
+    top:120px;
+    left:0px;
+    background-color:green;
+    display:none;
+    cursor:pointer;
 }
 #available_dice_div {
-	position:absolute;
-	z-index:2;
-	height:50px;
-	top:0px;
-	left:90px;
-	margin-top:5px;
+    position:absolute;
+    z-index:2;
+    height:50px;
+    top:0px;
+    left:90px;
+    margin-top:5px;
 }
 #big_bottom {
-	bottom:0px;
-	right:0px;
-	background-color: rgba(100,100,100,0.9);
-	background-image: url("images/roll.svg");
-	background-size: 80px 80px;
-	cursor:pointer;
+    bottom:0px;
+    right:0px;
+    background-color: rgba(100,100,100,0.9);
+    background-image: url("images/roll.svg");
+    background-size: 80px 80px;
+    cursor:pointer;
 }
 #small_bottom_right {
-	bottom:120px;
-	right:0px;
-	background-color:green;
-	display:none;
-	cursor:pointer;
+    bottom:120px;
+    right:0px;
+    background-color:green;
+    display:none;
+    cursor:pointer;
 }
 #small_bottom_left {
-	bottom:0px;
-	right:120px;
-	background-color: rgba(100,100,100,0.9);
-	background-image: url("images/clear.svg");
-	background-size: 50px 50px;
-	cursor:pointer;
+    bottom:0px;
+    right:120px;
+    background-color: rgba(100,100,100,0.9);
+    background-image: url("images/clear.svg");
+    background-size: 50px 50px;
+    cursor:pointer;
 }
 </style>
 <script>
 "use strict";
-var $ = function(id) {return document.getElementById(id)};//used to simplify $(); calls.
+
+//////////////////////
+// Global Variables //
+//////////////////////
+var $ = function (id) {
+    return document.getElementById(id);
+};
 var index = 0;
 var total = 0;
-var queue = {2:0,4:0,6:0,8:0,10:0,12:0,20:0,100:0,};
+var success = 0;
+var queue = {
+    2: 0,
+    4: 0,
+    6: 0,
+    8: 0,
+    10: 0,
+    12: 0,
+    20: 0,
+    100: 0
+};
 var types = Object.keys(queue);
 var length = types.length;
-var results = [];
+var random_org_results = [];
 var onclick = '';
 var front_div = '';
 var back_div = '';
 var tap_die_value = '';
-/*var session = {
-	date_stamp : "",
-	time_stamp : "",
-	rolls : {}, 
-	random : function () {
-		return Math.floor((1 + Math.random()) * 0x10000)
-		.toString(16)
-		.substring(1);
-	},
-	get_id : function () {
-		if (localStorage["id"] === undefined) {
-			var new_id = this.random();
-			localStorage["id"] = new_id;
-			return new_id;
-		}
-		else {
-			var old_id = localStorage["id"];
-			return old_id; 
-		}
-	},
-	get_time_now : function () {
-		return new Date();
-	},
-	update_time_stamp : function () {
-		this.time_stamp = this.get_time_now();
-		this.time_stamp = this.time_stamp.getHours() + ':' + this.time_stamp.getMinutes() + ':' + this.time_stamp.getSeconds() + '.' + this.time_stamp.getMilliseconds();
-	},
-	update_date_stamp : function () {
-		this.date_stamp = (get_time_now().getMonth() + 1) + '_' + get_time_now().getDate();
-	}
-}*/
+
+///////////////////////////
+// User Setting defaults //
+///////////////////////////
 var settings = {
-	//id : session.get_id(),
-	random : 'standard',
-	highlight_high : 1,
-	highlight_high_color : "#00FF00",
-	highlight_low : 1,
-	highlight_low_color : "#FF0000",
-	highlight_reroll : 1,
-	highlight_reroll_color : "#0000FF",
-	re_roll_list : [],
-	re_roll_these : {},
-	re_roll_high : 1,
-	dice_tapping : 0,	
-	state : "immediate",
-}
-function state_engine() {
-	if (settings.state == "immediate") {
-		$("small_bottom_left").style.display = "none";
-		$("queue_field").style.display = "none";
-		$("big_bottom").style.backgroundImage = 'url("images/clear.svg")'; 
-		$("big_bottom").setAttribute("onclick", "clear_engine();"); 
-		for (var i = 0; i <= length - 1; i++) {
-			$("rack_d"+types[i]).setAttribute("onclick", "new proto_die("+types[i]+");");
-		}
-	}
-	else if (settings.state == "queue") {
-		$("small_bottom_left").style.display = "block";
-		$("queue_field").style.display = "block";
-		$("big_bottom").style.backgroundImage = 'url("images/roll.svg")';
-		$("big_bottom").setAttribute("onclick", "queue_roll_engine();"); 
-		for (var i = 0; i <= length - 1; i++) {
-			$("rack_d"+types[i]).setAttribute("onclick", "queue_engine("+types[i]+", \"add\");");
-		}
-	}
-}
-function queue_engine (die_type, action) {
-	if (action == "add") {
-		$("queue_d"+die_type+"_div").style.display = "block";		
-		var count = parseInt($("queue_d"+die_type+"_count").innerHTML.slice(1));
-		if (count == "" || isNaN(count) == true) {
-			count = 1;
-		}
-		else {count += 1}
-		queue[die_type] += 1;
-		$("queue_d"+die_type+"_count").innerHTML = "x"+count;	
-	}
-	if (action == "remove") {
-		var count = parseInt($("queue_d"+die_type+"_count").innerHTML.slice(1));
-		if (count == "" || isNaN(count) == true || count == 1) {
-			count = 0;
-			$("queue_d"+die_type+"_div").style.display = "none";		
-		}
-		else {count -= 1}
-		queue[die_type] -= 1;
-		$("queue_d"+die_type+"_count").innerHTML = "x"+count;	
-	}
-}
-function queue_roll_engine() {
-	$("result_div").innerHTML = '';
-	total = 0;
-	index = 0;
-	if (settings.state == "immediate") {
-		for (var i = 0; i <= length - 1; i++) { 
-			for (var count = 1; count <= queue[types[i]]; count++) {
-				new proto_die(types[i]);
-			}
-		}
-	}
-	if (settings.state == "queue") {
-		for (var i = 0; i <= length - 1; i++) { 
-			if (settings.random == "org") {
-				if (queue[types[i]] != 0) {
-					results = random_engine(types[i], queue[types[i]]);
-				}
-				for (var count = 1; count <= queue[types[i]]; count++) {
-					new proto_die(types[i], count - 1);
-				}
-			}
-			else {
-				for (var count = 1; count <= queue[types[i]]; count++) {
-					new proto_die(types[i]);
-				}
-			}
-		}
-	}
-}
-function tap_engine(die_value, result, index) {
-	$("tap_die_rack").style.display = "none";
-	if (tap_die_value == '') {
-		for (var i = 0; i <= length - 1; i++) { 
-			$("tap_rack_d"+types[i]).setAttribute("onclick", 'tap_die_value = '+types[i]+'; tap_engine('+die_value+', '+result+', '+index+');');
-		}
-		$("tap_die_rack").style.display = "block";
-		return;
-	}
-	if (Math.floor(Math.random() * 10) + 1 <= 10) {
-		total -= result;	
-		result = random_engine(die_value);
-		var highlight = highlight_engine(die_value, result);
-		var reroll = reroll_engine(die_value, result); 
-		$("result_div_" + index).innerHTML = svg_engine(die_value, result, index, highlight, 0, 1); 
-		if (reroll == 1) {
-			$("result_div_" + index).setAttribute("onclick", 'reroll_me('+die_value+', '+result+', '+index+');');
-		}
-	}
-	new proto_die(tap_die_value);
-	tap_die_value = '';
-}
-function alert_engine() {
-}
-function clear_engine() {
-	total = 0;
-	index = 0;	
-	$("result_div").innerHTML = "";
-	$("big_top").innerHTML = "Total";
-	for (var i = 0; i <= length - 1; i++) { 
-		$("queue_d"+types[i]+"_count").innerHTML = "";
-		$("queue_d"+types[i]+"_div").style.display = "none";
-	}
-	queue = {2:0,4:0,6:0,8:0,10:0,12:0,20:0,100:0,}
-}
-function reroll_me(type, result, index) {
-	var highlight = highlight_engine(type, result);
-	$("result_div_" + index).removeAttribute("onclick");
-	$("result_div_" + index).innerHTML = svg_engine(type, result, index, highlight, 0, 1); 
-	new proto_die(type);
-}
-function div_engine(die_value, result, index, reroll) {
-	if (settings.dice_tapping == 1 && reroll != 1) {
-		onclick = ' onclick="tap_engine('+die_value+', '+result+', '+index+');" ';
-	}
-	else if (reroll == 1) {
-		onclick = ' onclick="reroll_me('+die_value+', '+result+', '+index+');" ';
-	}
-	else {
-		onclick = '';
-	}
-	front_div = '<div class="svg_container" id="result_div_'+index+'" '+onclick+'>';
-	back_div = '</div>';
-}
-function svg_engine (die_value, result, index, highlight, reroll, no_div) {
-	if (no_div != 1) {
-		div_engine(die_value, result, index, reroll);
-	}
-	else {
-		front_div = '';
-		back_div = ''; 
-	}
-	if (die_value == 2) { 
-		return front_div + '<svg version="1.1" id="svg'+index+'" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><ellipse transform="matrix(0.7193 0.6947 -0.6947 0.7193 150.6956 -56.9414)" stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" cx="145.809" cy="158.006" rx="171.516" ry="98.164"/><ellipse transform="matrix(0.7193 0.6947 -0.6947 0.7193 144.9006 -69.9506)" stroke="'+highlight+'" stroke-width="4" stroke-miterlimit="10" cx="159.01" cy="144.33" rx="171.513" ry="98.161"/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">'+result+'</text></svg>' + back_div;
-	}
-	if (die_value == 4) { 
-		return front_div + '<svg version="1.1" id="svg'+index+'" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="8,275.239 150.306,28.76 292.611,275.239 "/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">'+result+'</text></svg>' + back_div;
-	}
-	if (die_value == 6) { 
-		return front_div + '<svg version="1.1" id="svg'+index+'" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><rect x="12.5" y="12.5" stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" width="276" height="276"/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">'+result+'</text></svg>' + back_div;
-	}
-	if (die_value == 8) { 
-		return front_div + '<svg version="1.1" id="svg'+index+'" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="38.154,204.812 150.979,9.398 263.802,204.812 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="38.154,208.536 150.979,291.669 263.802,208.536 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="267.873,203.952 251.5,80.5 155.048,8.537 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="144.874,9.537 48.422,81.5 32.049,204.952 "/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">'+result+'</text></svg>' + back_div;
-	}
-	if (die_value == 10) { 
-		return front_div + '<svg version="1.1" id="svg'+index+'" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="60.073,185.758 151.473,11.574 242.869,185.758 151.473,251.791 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="245.273,183.75 154.994,13.589 285.682,131.708 284.792,178.068 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="152.979,290.421 152.979,253.891 246.021,186.018 285.048,180.441 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="56.695,184.75 146.977,14.589 16.289,132.708 17.178,179.068 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="149.865,289.914 149.865,254.891 56.822,187.018 17.796,181.441 "/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">'+result+'</text></svg>' + back_div;
-	}
-	if (die_value == 12) { 
-		return front_div + '<svg version="1.1" id="svg'+index+'" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="97.465,224.479 64.364,122.609 151.02,59.651 237.676,122.609 204.575,224.479 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="153.469,57.673 153.469,10.91 234.18,37.008 285.668,106.737 240.124,120.632 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="240.131,123.472 284.604,109.023 284.725,193.852 234.318,264.363 207.027,225.346 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="204.262,226.986 231.75,264.814 151.109,291.143 68.472,264.999 97.148,226.979 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="95.478,225.939 67.998,263.77 18.037,195.213 17.369,108.541 62.383,124.065 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="61.823,120.371 17.354,105.927 67.117,37.227 149.34,9.807 148.484,57.417 "/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">'+result+'</text></svg>' + back_div;
-	}
-	if (die_value == 20) { 
-		return front_div + '<svg version="1.1" id="svg'+index+'" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="67.02,195.016 152.48,46.994 237.939,195.016 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="156.126,44.994 280.529,71.852 241.587,193.016 "/><polyline stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="63.376,193.016 24.432,71.852 148.835,44.994 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="237.943,198.66 152.48,292.967 67.02,198.66 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="154.125,41.349 155.126,3.493 279.529,68.946 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="150.463,42.048 150.275,3.192 26.191,69.246 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="240.473,199.615 274.087,219.098 155.086,293.919 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="243.377,195.648 276.919,215.264 283.215,74.831 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="63.589,198.689 30.013,218.242 149.181,292.809 "/><polygon stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" points="61.34,195.748 27.743,215.27 21.827,74.823 "/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">'+result+'</text></svg>' + back_div;
-	}
-	if (die_value == 100) { 
-		return front_div + '<svg version="1.1" id="svg'+index+'" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><circle stroke="'+highlight+'" stroke-width="5" stroke-miterlimit="10" cx="154.197" cy="151.097" r="141.5"/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">'+result+'</text></svg>' + back_div;
-	}
-}
-function random_engine (die_type, count) {
-	if (settings.random == "curve") {
-		return Math.round(Math.random() * die_type) + 1;
-	}
-	if (settings.random == "org" && count == undefined) {
-                var xmlhttp=new XMLHttpRequest();
-                xmlhttp.open("GET","http://www.random.org/integers/?num=1&min=1&max="+die_type+"&col=1&base=10&format=plain&rnd=new",false);
-                xmlhttp.send();
-		return parseInt(xmlhttp.responseText);
-	}
-	if (settings.random == "org" && count != undefined) {
-                var xmlhttp=new XMLHttpRequest();
-                xmlhttp.open("GET","http://www.random.org/integers/?num="+count+"&min=1&max="+die_type+"&col=1&base=10&format=plain&rnd=new",false);
-                xmlhttp.send();
-		var temp = xmlhttp.responseText.split("\n");
-		for (var q = 0; q <= temp.length - 1; q++) {
-			temp[q] = parseInt(temp[q]);
-		} 
-		return temp;
-	}
-	else {
-		return Math.floor(Math.random() * die_type) + 1;
-	}
-}
-function index_engine (arg) {
-	if (arg == "clear") {
-		index = 0;
-	}
-	else {
-		index += 1;
-		return index;
-	}
-}
-function highlight_engine (die_value, result) {
-	if (settings["highlight_low"] == 1 && result == 1) {
-		return settings.highlight_low_color;
-	}
-	if (settings["highlight_high"] == 1 && die_value == result) {
-		return settings.highlight_high_color;	
-	}
-	if (settings["highlight_reroll"] == 1) {
-		if (settings.re_roll_high == 1 && die_value == result) {
-			return settings.highlight_reroll_color;
-		}
-		if (settings.re_roll_these[die_value] != undefined && settings.re_roll_these[die_value].indexOf(result.toString()) != -1) {
-			return settings.highlight_reroll_color;	
-		} 
-		else {return "#FFFFFF";}
-	}
-	else {return "#FFFFFF";}
-}
-function reroll_engine(die_value, result, index) {
-	if (settings.re_roll_high == 1 && die_value == result) {
-		return 1;	
-	}
-	if (settings.re_roll_these[die_value] != undefined) {
-		if (settings.re_roll_these[die_value].indexOf(result.toString()) != -1){
-			return 1;
-		}
-	}
-	else {
-		return 0;
-	}
-}
-function proto_die (arg, queue, no_div, tap) {
-	this.die_value = arg;
-	this.result = (queue == undefined || queue == 0) ? random_engine(this.die_value) : results[queue];
-	this.index = index_engine();
-	this.highlight = highlight_engine(this.die_value, this.result);
-	this.reroll = reroll_engine(this.die_value, this.result);
-	this.svg = svg_engine(this.die_value, this.result, this.index, this.highlight, this.reroll, this.no_div); 
-	total += this.result;
-	if (tap != 1) {
-		$("result_div").innerHTML += this.svg;
-	}
-	$("big_top").innerHTML = total;
-}
-var settings_controller = {
-	populate_settings : function () {
-		var local = this.get_local();
-		var temp = "";
-		if (local != 0) {
-			settings = local;
-		}
-		//Random
-		$("settings_random_standard").checked = (settings.random == "standard") ? true : false; 
-		$("settings_random_curve").checked = (settings.random == "curve") ? true : false;
-		$("settings_random_org").checked = (settings.random == "org") ? true : false;
-		//Highlight
-		$("settings_highlight_high").checked = (settings.highlight_high == 1) ? true : false;
-		$("settings_highlight_low").checked = (settings.highlight_low == 1) ? true : false;
-		$("settings_highlight_reroll").checked = (settings.highlight_reroll == 1) ? true : false;
-		//Reroll
-		$("settings_reroll_high").checked = (settings.re_roll_high == 1) ? true : false;
-		$("current_id").value = settings.id;
-		//Cheat
-		$("settings_tapping_checkbox").checked = (settings.dice_tapping == 1) ? true : false;
-		//Color
-		$("settings_highlight_high_color").value = settings.highlight_high_color;
-		$("settings_highlight_low_color").value = settings.highlight_low_color;
-		$("settings_highlight_reroll_color").value = settings.highlight_reroll_color;
-		//State
-		$("settings_state_queue").checked = (settings.state == "queue") ? true : false; 
-		$("settings_state_immediate").checked = (settings.state == "immediate") ? true : false;
-		state_engine();
-		for (var i = 0; i <= settings.re_roll_list.length - 1; i++) {
-			temp += settings.re_roll_list[i];
-		}
-		$("list_reroll_these").innerHTML = temp;
-	},
-	toggle : function (arg) {
-		if (arg == "high"){
-			settings.highlight_high = (settings.highlight_high == 0) ? 1 : 0;
-		}
-		if (arg == "low"){
-			settings.highlight_low = (settings.highlight_low == 0) ? 1 : 0;
-		}
-		if (arg == "reroll_highlight"){
-			settings.highlight_reroll = (settings.highlight_reroll == 0) ? 1 : 0;
-		}
-		if (arg == "reroll_high"){
-			settings.re_roll_high = (settings.re_roll_high == 0) ? 1 : 0;
-		}
-		if (arg == "standard" || arg == "curve" || arg == "org") {
-			settings.random = arg;
-		}
-		if (arg == "tapping") {
-			settings.dice_tapping = (settings.dice_tapping == 0) ? 1 : 0;
-		}
-		if (arg == "queue" || arg == "immediate") {
-			settings.state = arg;
-			state_engine();
-		}
-		this.put_local();
-	},
-	color : function (arg) {
-		if (arg == "high") {
-			settings.highlight_high_color = $("settings_highlight_high_color").value;
-		}
-		if (arg == "low") {
-			settings.highlight_low_color = $("settings_highlight_low_color").value;
-		}
-		if (arg == "reroll") {
-			settings.highlight_reroll_color = $("settings_highlight_reroll_color").value;
-		}
-		this.put_local();
-	},
-	toggle_display : function () {
-		if ($("settings_div").style.display == "none" || $("settings_div").style.display == "") {
-			$("settings_div").style.display = "block";
-		}
-		else {
-			$("settings_div").style.display = "none"; 
-		}
-		this.put_local();
-	},
-	reroll_options: function (arg) {
-		var html = ["<option>Choose One</option>"];
-		var x = arg.slice(1);
-		for (var i = 0; i < x; i++) {
-			html.push("<option>" + (i + 1) + "</option>");
-		}
-		$("settings_reroll_value").innerHTML = html;
-	},
-	add_reroll : function (type, value) {
-		var type = type.slice(1);
-		if (value == "Choose One") {return};
-		if (settings.re_roll_these[type] == undefined) {
-			settings.re_roll_these[type] = [value];	
-		}
-		else {settings.re_roll_these[type].push(value);}
-		settings.re_roll_list.push("D"+type+" :: "+value+"</br>");
-		this.put_local();
-		this.populate_settings(); 
-	},
-	change_id : function (new_value) {
-		settings.id = new_value;
-		this.put_local();
-	},
-	clear_reroll : function () {
-		settings.re_roll_these = {};
-		settings.re_roll_list = [];
-		$("list_reroll_these").innerHTML = "";
-		this.put_local();
-	},
-	put_local : function () {
-		localStorage["D_What_settings"] = JSON.stringify(settings);
-	},
-	get_local : function () {
-		if (localStorage.D_What_settings != undefined) {
-			return JSON.parse(localStorage.D_What_settings);
-		}	
-		else {return 0;}
-	}, 
-}
-/*var server = {
-        putjson : function(arg) {
-                var send = JSON.stringify(arg);
-                var xmlhttp = new XMLHttpRequest();
-                xmlhttp.open("POST","cgi-bin/ajax.pl",true);
-                xmlhttp.setRequestHeader("Content-Type", "text/plain;charset=UTF-8");
-                xmlhttp.send(send);
-        },
-        getjson : function() {
-                var xmlhttp=new XMLHttpRequest();
-                xmlhttp.open("GET","log/" + session.rolls.id + ".json",false);
-                xmlhttp.send();
-                return JSON.parse(xmlhttp.responseText);
+    //id : session.get_id(),
+    random: 'standard',
+    highlight_high: 1,
+    highlight_high_color: "#00FF00",
+    highlight_low: 1,
+    highlight_low_color: "#FF0000",
+    highlight_reroll: 1,
+    highlight_reroll_color: "#0000FF",
+    re_roll_list: [],
+    re_roll_these: {},
+    re_roll_high: 1,
+    dice_tapping: 0,
+    state: "immediate",
+    slider_value: 8,
+    big_top: "total"
+};
+
+/////////////////////
+// Dice Logic Core //
+/////////////////////
+
+
+function random_engine(die_type, count) {
+    var xmlhttp, temp, i;
+    if (settings.random === "curve") {
+        return Math.round(Math.random() * die_type) + 1;
+    }
+    if (settings.random === "org" && count === undefined) {
+        xmlhttp = new XMLHttpRequest();
+        xmlhttp.open("GET", "http://www.random.org/integers/?num=1&min=1&max=" + die_type + "&col=1&base=10&format=plain&rnd=new", false);
+        xmlhttp.send();
+        return parseInt(xmlhttp.responseText, 10);
+    }
+    if (settings.random === "org" && count !== undefined) {
+        xmlhttp = new XMLHttpRequest();
+        xmlhttp.open("GET", "http://www.random.org/integers/?num=" + count + "&min=1&max=" + die_type + "&col=1&base=10&format=plain&rnd=new", false);
+        xmlhttp.send();
+        temp = xmlhttp.responseText.split("\n");
+        for (i = 0; i <= temp.length - 1; i++) {
+            temp[i] = parseInt(temp[i], 10);
         }
+        return temp;
+    }
+    return Math.floor(Math.random() * die_type) + 1;
+}
+
+function index_engine(arg) {
+    if (arg == "clear") {
+        index = 0;
+    } else {
+        index += 1;
+        return index;
+    }
+}
+
+function highlight_engine(die_value, result) {
+    if (settings.highlight_low == 1 && result == 1) {
+        return settings.highlight_low_color;
+    }
+    if (settings.highlight_high == 1 && die_value == result) {
+        return settings.highlight_high_color;
+    }
+    if (settings.highlight_reroll == 1) {
+        if (settings.re_roll_high == 1 && die_value == result) {
+            return settings.highlight_reroll_color;
+        }
+        if (settings.re_roll_these[die_value] != undefined && settings.re_roll_these[die_value].indexOf(result.toString()) != -1) {
+            return settings.highlight_reroll_color;
+        }
+        return "#FFFFFF";
+    }
+    return "#FFFFFF";
+}
+
+function reroll_engine(die_value, result) {
+    if (settings.re_roll_high == 1 && die_value == result) {
+        return 1;
+    }
+    if (settings.re_roll_these[die_value] != undefined) {
+        if (settings.re_roll_these[die_value].indexOf(result.toString()) != -1) {
+            return 1;
+        }
+    }
+    return 0;
+}
+/////////// HTML and SVG Logic ///////////
+function div_engine(die_value, result, index, reroll) {
+    if (settings.dice_tapping == 1 && reroll != 1) {
+        onclick = ' onclick="tap_engine(' + die_value + ', ' + result + ', ' + index + ');" ';
+    } else if (reroll == 1) {
+        onclick = ' onclick="reroll_me(' + die_value + ', ' + result + ', ' + index + ');" ';
+    } else {
+        onclick = '';
+    }
+    front_div = '<div class="svg_container" id="result_div_' + index + '" ' + onclick + '>';
+    back_div = '</div>';
+}
+function svg_engine(die_value, result, index, highlight, reroll, no_div) {
+    if (no_div != 1) {
+        div_engine(die_value, result, index, reroll);
+    } else {
+        front_div = '';
+        back_div = '';
+    }
+    if (die_value == 2) {
+        return front_div + '<svg version="1.1" id="svg' + index + '" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><ellipse transform="matrix(0.7193 0.6947 -0.6947 0.7193 150.6956 -56.9414)" stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" cx="145.809" cy="158.006" rx="171.516" ry="98.164"/><ellipse transform="matrix(0.7193 0.6947 -0.6947 0.7193 144.9006 -69.9506)" stroke="' + highlight + '" stroke-width="4" stroke-miterlimit="10" cx="159.01" cy="144.33" rx="171.513" ry="98.161"/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">' + result + '</text></svg>' + back_div;
+    }
+    if (die_value == 4) {
+        return front_div + '<svg version="1.1" id="svg' + index + '" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="8,275.239 150.306,28.76 292.611,275.239 "/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">' + result + '</text></svg>' + back_div;
+    }
+    if (die_value == 6) {
+        return front_div + '<svg version="1.1" id="svg' + index + '" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><rect x="12.5" y="12.5" stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" width="276" height="276"/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">' + result + '</text></svg>' + back_div;
+    }
+    if (die_value == 8) {
+        return front_div + '<svg version="1.1" id="svg' + index + '" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="38.154,204.812 150.979,9.398 263.802,204.812 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="38.154,208.536 150.979,291.669 263.802,208.536 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="267.873,203.952 251.5,80.5 155.048,8.537 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="144.874,9.537 48.422,81.5 32.049,204.952 "/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">' + result + '</text></svg>' + back_div;
+    }
+    if (die_value == 10) {
+        return front_div + '<svg version="1.1" id="svg' + index + '" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="60.073,185.758 151.473,11.574 242.869,185.758 151.473,251.791 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="245.273,183.75 154.994,13.589 285.682,131.708 284.792,178.068 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="152.979,290.421 152.979,253.891 246.021,186.018 285.048,180.441 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="56.695,184.75 146.977,14.589 16.289,132.708 17.178,179.068 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="149.865,289.914 149.865,254.891 56.822,187.018 17.796,181.441 "/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">' + result + '</text></svg>' + back_div;
+    }
+    if (die_value == 12) {
+        return front_div + '<svg version="1.1" id="svg' + index + '" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="97.465,224.479 64.364,122.609 151.02,59.651 237.676,122.609 204.575,224.479 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="153.469,57.673 153.469,10.91 234.18,37.008 285.668,106.737 240.124,120.632 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="240.131,123.472 284.604,109.023 284.725,193.852 234.318,264.363 207.027,225.346 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="204.262,226.986 231.75,264.814 151.109,291.143 68.472,264.999 97.148,226.979 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="95.478,225.939 67.998,263.77 18.037,195.213 17.369,108.541 62.383,124.065 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="61.823,120.371 17.354,105.927 67.117,37.227 149.34,9.807 148.484,57.417 "/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">' + result + '</text></svg>' + back_div;
+    }
+    if (die_value == 20) {
+        return front_div + '<svg version="1.1" id="svg' + index + '" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="67.02,195.016 152.48,46.994 237.939,195.016 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="156.126,44.994 280.529,71.852 241.587,193.016 "/><polyline stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="63.376,193.016 24.432,71.852 148.835,44.994 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="237.943,198.66 152.48,292.967 67.02,198.66 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="154.125,41.349 155.126,3.493 279.529,68.946 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="150.463,42.048 150.275,3.192 26.191,69.246 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="240.473,199.615 274.087,219.098 155.086,293.919 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="243.377,195.648 276.919,215.264 283.215,74.831 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="63.589,198.689 30.013,218.242 149.181,292.809 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="61.34,195.748 27.743,215.27 21.827,74.823 "/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">' + result + '</text></svg>' + back_div;
+    }
+    if (die_value == 100) {
+        return front_div + '<svg version="1.1" id="svg' + index + '" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><circle stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" cx="154.197" cy="151.097" r="141.5"/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">' + result + '</text></svg>' + back_div;
+    }
+}
+////////////////////////////////////
+// The Prototype to rule them all //
+////////////////////////////////////
+
+function Proto_Die(arg, queue, tap) { // I build a die object
+    this.die_value = arg;
+    this.result = (queue === undefined || queue === 0) ? random_engine(this.die_value) : random_org_results[queue];
+    this.index = index_engine();
+    this.highlight = highlight_engine(this.die_value, this.result);
+    this.reroll = reroll_engine(this.die_value, this.result);
+    this.svg = svg_engine(this.die_value, this.result, this.index, this.highlight, this.reroll, this.no_div);
+    total += this.result;
+    success += (this.result >= settings.slider_value) ? 1 : 0;
+    if (tap != 1) {
+        $("result_div").innerHTML += this.svg;
+    }
+    $("big_top").innerHTML = (settings.big_top == "total") ? total : success;
+}
+///////////// Queue Logic ////////////////
+function queue_engine(die_type, action) {
+    var count;
+    if (action == "add") {
+        $("queue_d" + die_type + "_div").style.display = "block";
+        count = parseInt($("queue_d" + die_type + "_count").innerHTML.slice(1), 10);
+        if (count == "" || isNaN(count) == true) {
+            count = 1;
+        } else {
+            count += 1;
+        }
+        queue[die_type] += 1;
+        $("queue_d" + die_type + "_count").innerHTML = "x" + count;
+    }
+    if (action == "remove") {
+        count = parseInt($("queue_d" + die_type + "_count").innerHTML.slice(1), 10);
+        if (count == "" || isNaN(count) == true || count == 1) {
+            count = 0;
+            $("queue_d" + die_type + "_div").style.display = "none";
+        } else {
+            count -= 1;
+        }
+        queue[die_type] -= 1;
+        $("queue_d" + die_type + "_count").innerHTML = "x" + count;
+    }
+}
+
+function queue_roll_engine() {
+    var i, count;
+    $("result_div").innerHTML = '';
+    total = 0;
+    success = 0;
+    index = 0;
+    if (settings.state == "immediate") {
+        for (i = 0; i <= length - 1; i++) {
+            for (count = 1; count <= queue[types[i]]; count++) {
+                new Proto_Die(types[i]);
+            }
+        }
+    }
+    if (settings.state == "queue") {
+        for (i = 0; i <= length - 1; i++) {
+            if (settings.random == "org") {
+                if (queue[types[i]] != 0) {
+                    random_org_results = random_engine(types[i], queue[types[i]]);
+                }
+                for (count = 1; count <= queue[types[i]]; count++) {
+                    new Proto_Die(types[i], count - 1);
+                }
+            } else {
+                for (count = 1; count <= queue[types[i]]; count++) {
+                    new Proto_Die(types[i]);
+                }
+            }
+        }
+    }
+}
+//////////// Reroll Logic ////////////
+
+function reroll_me(type, result, index) {
+    //var highlight = highlight_engine(type, result);
+    $("result_div_" + index).removeAttribute("onclick");
+    $("result_div_" + index).innerHTML = svg_engine(type, result, index, highlight, 0, 1); 
+    new Proto_Die(type);
+}
+/////////// Die Tap Logic ////////////
+
+function tap_engine(die_value, result, index) {
+    var i, highlight, reroll;
+    $("tap_die_rack").style.display = "none";
+    if (tap_die_value == '') {
+        for (i = 0; i <= length - 1; i++) {
+            $("tap_rack_d" + types[i]).setAttribute("onclick", 'tap_die_value = ' + types[i] + '; tap_engine(' + die_value + ', ' + result + ', ' + index + ');');
+        }
+        $("tap_die_rack").style.display = "block";
+        return;
+    }
+    if (Math.floor(Math.random() * 10) + 1 <= 10) {
+        total -= result;
+        success -= (result <= settings.slider_value) ? 1 : 0;
+        result = random_engine(die_value);
+        highlight = highlight_engine(die_value, result);
+        reroll = reroll_engine(die_value, result);
+        $("result_div_" + index).innerHTML = svg_engine(die_value, result, index, highlight, 0, 1);
+        if (reroll == 1) {
+            $("result_div_" + index).setAttribute("onclick", 'reroll_me(' + die_value + ', ' + result + ', ' + index + ');');
+        }
+    }
+    new Proto_Die(tap_die_value);
+    tap_die_value = '';
+}
+
+/////////////////////////////
+// Interface State Changes //
+/////////////////////////////
+
+function state_engine() {
+    var i;
+    if (settings.state == "immediate") {
+        $("small_bottom_left").style.display = "none";
+        $("queue_field").style.display = "none";
+        $("big_bottom").style.backgroundImage = 'url("images/clear.svg")';
+        $("big_bottom").setAttribute("onclick", "clear_engine();");
+        for (i = 0; i <= length - 1; i++) {
+            $("rack_d" + types[i]).setAttribute("onclick", "new Proto_Die(" + types[i] + ");");
+        }
+    } else if (settings.state == "queue") {
+        $("small_bottom_left").style.display = "block";
+        $("queue_field").style.display = "block";
+        $("big_bottom").style.backgroundImage = 'url("images/roll.svg")';
+        $("big_bottom").setAttribute("onclick", "queue_roll_engine();");
+        for (i = 0; i <= length - 1; i++) {
+            $("rack_d" + types[i]).setAttribute("onclick", "queue_engine(" + types[i] + ", \"add\");");
+        }
+    }
+}
+
+//function alert_engine() {}
+
+function clear_engine() {
+    var i;
+    total = 0;
+    success = 0;
+    index = 0;
+    $("result_div").innerHTML = "";
+    $("big_top").innerHTML = "Total";
+    for (i = 0; i <= length - 1; i++) {
+        $("queue_d" + types[i] + "_count").innerHTML = "";
+        $("queue_d" + types[i] + "_div").style.display = "none";
+    }
+    queue = {
+        2: 0,
+        4: 0,
+        6: 0,
+        8: 0,
+        10: 0,
+        12: 0,
+        20: 0,
+        100: 0
+    };
+}
+
+
+///////////////////////
+// Settings Handling //
+///////////////////////
+var settings_controller = {
+    populate_settings: function () {
+        var local = this.get_local(), temp = "", i;
+        if (local != 0) {
+            settings = local;
+        }
+        //Random
+        $("settings_random_standard").checked = (settings.random == "standard") ? true : false;
+        $("settings_random_curve").checked = (settings.random == "curve") ? true : false;
+        $("settings_random_org").checked = (settings.random == "org") ? true : false;
+        //Highlight
+        $("settings_highlight_high").checked = (settings.highlight_high == 1) ? true : false;
+        $("settings_highlight_low").checked = (settings.highlight_low == 1) ? true : false;
+        $("settings_highlight_reroll").checked = (settings.highlight_reroll == 1) ? true : false;
+        //Reroll
+        $("settings_reroll_high").checked = (settings.re_roll_high == 1) ? true : false;
+        $("current_id").value = settings.id;
+        //Cheat
+        $("settings_tapping_checkbox").checked = (settings.dice_tapping == 1) ? true : false;
+        //Color
+        $("settings_highlight_high_color").value = settings.highlight_high_color;
+        $("settings_highlight_low_color").value = settings.highlight_low_color;
+        $("settings_highlight_reroll_color").value = settings.highlight_reroll_color;
+        //State
+        $("settings_state_queue").checked = (settings.state == "queue") ? true : false;
+        $("settings_state_immediate").checked = (settings.state == "immediate") ? true : false;
+        //Slider
+        $("bottom_slider_widget").value = settings.slider_value;
+
+        state_engine();
+        for (i = 0; i <= settings.re_roll_list.length - 1; i++) {
+            temp += settings.re_roll_list[i];
+        }
+        $("list_reroll_these").innerHTML = temp;
+    },
+    toggle: function (arg) {
+        if (arg == "high") {
+            settings.highlight_high = (settings.highlight_high == 0) ? 1 : 0;
+        }
+        if (arg == "low") {
+            settings.highlight_low = (settings.highlight_low == 0) ? 1 : 0;
+        }
+        if (arg == "reroll_highlight") {
+            settings.highlight_reroll = (settings.highlight_reroll == 0) ? 1 : 0;
+        }
+        if (arg == "reroll_high") {
+            settings.re_roll_high = (settings.re_roll_high == 0) ? 1 : 0;
+        }
+        if (arg == "standard" || arg == "curve" || arg == "org") {
+            settings.random = arg;
+        }
+        if (arg == "tapping") {
+            settings.dice_tapping = (settings.dice_tapping == 0) ? 1 : 0;
+        }
+        if (arg == "queue" || arg == "immediate") {
+            settings.state = arg;
+            state_engine();
+        }
+        this.put_local();
+    },
+    color: function (arg) {
+        if (arg == "high") {
+            settings.highlight_high_color = $("settings_highlight_high_color").value;
+        }
+        if (arg == "low") {
+            settings.highlight_low_color = $("settings_highlight_low_color").value;
+        }
+        if (arg == "reroll") {
+            settings.highlight_reroll_color = $("settings_highlight_reroll_color").value;
+        }
+        this.put_local();
+    },
+    toggle_display: function () {
+        if ($("settings_div").style.display == "none" || $("settings_div").style.display == "") {
+            $("settings_div").style.display = "block";
+        } else {
+            $("settings_div").style.display = "none";
+        }
+        this.put_local();
+    },
+    reroll_options: function (arg) {
+        var html = ["<option>Choose One</option>"], x = arg.slice(1), i;
+        for (i = 0; i < x; i++) {
+            html.push("<option>" + (i + 1) + "</option>");
+        }
+        $("settings_reroll_value").innerHTML = html;
+    },
+    add_reroll: function (die_type, value) {
+        die_type = die_type.slice(1);
+        if (value == "Choose One") {
+            return;
+        }
+        if (settings.re_roll_these[die_type] == undefined) {
+            settings.re_roll_these[die_type] = [value];
+        } else {
+            settings.re_roll_these[die_type].push(value);
+        }
+        settings.re_roll_list.push("D" + die_type + " :: " + value + "</br>");
+        this.put_local();
+        this.populate_settings();
+    },
+    change_id: function (new_value) {
+        settings.id = new_value;
+        this.put_local();
+    },
+    clear_reroll: function () {
+        settings.re_roll_these = {};
+        settings.re_roll_list = [];
+        $("list_reroll_these").innerHTML = "";
+        this.put_local();
+    },
+    put_local: function () {
+        localStorage.D_What_settings = JSON.stringify(settings);
+    },
+    get_local: function () {
+        if (localStorage.D_What_settings != undefined) {
+            return JSON.parse(localStorage.D_What_settings);
+        }
+        return 0;
+    }
+};
+
+function bootme() {
+    localStorage.D_What_settings = "";
+    window.alert("Ok refresh the page now");
+}
+
+///////////////////////////////////////////
+// Gaming Engine Logic and State Changes //
+///////////////////////////////////////////
+
+function WOD_success_engine() {
+    settings.slider_value = document.getElementById("bottom_slider_widget").value;
+    settings_controller.put_local();
+}
+
+////////////////////////
+// Server and Session //
+////////////////////////
+/*var server = {
+    putjson : function (arg) {
+            var send = JSON.stringify(arg);
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.open("POST","cgi-bin/ajax.pl",true);
+            xmlhttp.setRequestHeader("Content-Type", "text/plain;charset=UTF-8");
+            xmlhttp.send(send);
+    },
+    getjson : function () {
+            var xmlhttp=new XMLHttpRequest();
+            xmlhttp.open("GET","log/" + session.rolls.id + ".json",false);
+            xmlhttp.send();
+            return JSON.parse(xmlhttp.responseText);
+    }
+}*/
+/*varr session = {
+date_stamp : "",
+time_stamp : "",
+rolls : {}, 
+random : function () {
+    return Math.floor((1 + Math.random()) * 0x10000)
+    .toString(16)
+    .substring(1);
+},
+get_id : function () {
+    if (localStorage["id"] === undefined) {
+        var new_id = this.random();
+        localStorage["id"] = new_id;
+        return new_id;
+    }
+    else {
+        var old_id = localStorage["id"];
+        return old_id; 
+    }
+},
+get_time_now : function () {
+    return new Date();
+},
+update_time_stamp : function () {
+    this.time_stamp = this.get_time_now();
+    this.time_stamp = this.time_stamp.getHours() + ':' + this.time_stamp.getMinutes() + ':' + this.time_stamp.getSeconds() + '.' + this.time_stamp.getMilliseconds();
+    },
+    update_date_stamp : function () {
+        this.date_stamp = (get_time_now().getMonth() + 1) + '_' + get_time_now().getDate();
+    }
 }*/
 </script>
 </head>
 <body onload="/*session.get_id();*/ settings_controller.populate_settings();">
 <!--<body onload="layout.calcsize();" onResize="layout.calcsize();">-->
 <div id="available_dice_div">
-	<img id="rack_d2" class="dice_rack" src="images/2_2.svg" onclick="new proto_die(2);"></img>
-	<img id="rack_d4" class="dice_rack" src="images/4_4.svg" onclick="new proto_die(4);"></img>
-	<img id="rack_d6" class="dice_rack" src="images/6_6.svg" onclick="new proto_die(6);"></img>
-	<img id="rack_d8" class="dice_rack" src="images/8_8.svg" onclick="new proto_die(8);"></img>
-	<img id="rack_d10" class="dice_rack" src="images/10_10.svg" onclick="new proto_die(10);"></img>
-	<img id="rack_d12" class="dice_rack" src="images/12_12.svg" onclick="new proto_die(12);"></img>
-	<img id="rack_d20" class="dice_rack" src="images/20_20.svg" onclick="new proto_die(20);"></img>
-	<img id="rack_d100" class="dice_rack" src="images/100_100.svg" onclick="new proto_die(100);"></img>
+	<img alt="D2" id="rack_d2" class="dice_rack" src="images/2_2.svg" onclick="new Proto_Die(2);">
+	<img alt="D4" id="rack_d4" class="dice_rack" src="images/4_4.svg" onclick="new Proto_Die(4);">
+	<img alt="D6" id="rack_d6" class="dice_rack" src="images/6_6.svg" onclick="new Proto_Die(6);">
+	<img alt="D8" id="rack_d8" class="dice_rack" src="images/8_8.svg" onclick="new Proto_Die(8);">
+	<img alt="D10" id="rack_d10" class="dice_rack" src="images/10_10.svg" onclick="new Proto_Die(10);">
+	<img alt="D12" id="rack_d12" class="dice_rack" src="images/12_12.svg" onclick="new Proto_Die(12);">
+	<img alt="D20" id="rack_d20" class="dice_rack" src="images/20_20.svg" onclick="new Proto_Die(20);">
+	<img alt="D100" id="rack_d100" class="dice_rack" src="images/100_100.svg" onclick="new Proto_Die(100);">
 </div>
 <div id="appdiv1">
 <div id="queue_main_div"></div>
 	<fieldset id="queue_field">
 		<legend>Queue</legend>	
 		<div id="queue_div">
-		<div class="queue_div" id="queue_d2_div"><img class="queue_img" src="images/2_2.svg" onclick='queue_engine(2, "remove");'></img><div class="queue_count" id="queue_d2_count"></div></div>
-		<div class="queue_div" id="queue_d4_div"><img class="queue_img" src="images/4_4.svg" onclick='queue_engine(4, "remove");'></img><div class="queue_count" id="queue_d4_count"></div></div>
-		<div class="queue_div" id="queue_d6_div"><img class="queue_img" src="images/6_6.svg" onclick='queue_engine(6, "remove");'></img><div class="queue_count" id="queue_d6_count"></div></div>
-		<div class="queue_div" id="queue_d8_div"><img class="queue_img" src="images/8_8.svg" onclick='queue_engine(8, "remove");'></img><div class="queue_count" id="queue_d8_count"></div></div>
-		<div class="queue_div" id="queue_d10_div"><img class="queue_img" src="images/10_10.svg" onclick='queue_engine(10, "remove");'></img><div class="queue_count" id="queue_d10_count"></div></div>
-		<div class="queue_div" id="queue_d12_div"><img class="queue_img" src="images/12_12.svg" onclick='queue_engine(12, "remove");'></img><div class="queue_count" id="queue_d12_count"></div></div>
-		<div class="queue_div" id="queue_d20_div"><img class="queue_img" src="images/20_20.svg" onclick='queue_engine(20, "remove");'></img><div class="queue_count" id="queue_d20_count"></div></div>
-		<div class="queue_div" id="queue_d100_div"><img class="queue_img" src="images/100_100.svg" onclick='queue_engine(100, "remove");'></img><div class="queue_count" id="queue_d100_count"></div></div>
+		<div class="queue_div" id="queue_d2_div"><img alt="D2" class="queue_img" src="images/2_2.svg" onclick='queue_engine(2, "remove");'><div class="queue_count" id="queue_d2_count"></div></div>
+		<div class="queue_div" id="queue_d4_div"><img alt="D4" class="queue_img" src="images/4_4.svg" onclick='queue_engine(4, "remove");'><div class="queue_count" id="queue_d4_count"></div></div>
+		<div class="queue_div" id="queue_d6_div"><img alt="D6" class="queue_img" src="images/6_6.svg" onclick='queue_engine(6, "remove");'><div class="queue_count" id="queue_d6_count"></div></div>
+		<div class="queue_div" id="queue_d8_div"><img alt="D8" class="queue_img" src="images/8_8.svg" onclick='queue_engine(8, "remove");'><div class="queue_count" id="queue_d8_count"></div></div>
+		<div class="queue_div" id="queue_d10_div"><img alt="D10" class="queue_img" src="images/10_10.svg" onclick='queue_engine(10, "remove");'><div class="queue_count" id="queue_d10_count"></div></div>
+		<div class="queue_div" id="queue_d12_div"><img alt="D12" class="queue_img" src="images/12_12.svg" onclick='queue_engine(12, "remove");'><div class="queue_count" id="queue_d12_count"></div></div>
+		<div class="queue_div" id="queue_d20_div"><img alt="D20" class="queue_img" src="images/20_20.svg" onclick='queue_engine(20, "remove");'><div class="queue_count" id="queue_d20_count"></div></div>
+		<div class="queue_div" id="queue_d100_div"><img alt="D100" class="queue_img" src="images/100_100.svg" onclick='queue_engine(100, "remove");'><div class="queue_count" id="queue_d100_count"></div></div>
 		</div>
 	</fieldset>
 	<fieldset id="result_field">
@@ -704,55 +791,55 @@ var settings_controller = {
 <div id="small_bottom_right" class="small_side_button"></div>
 <div id="small_bottom_left" class="small_side_button" title="clear" onclick="clear_engine();"></div>
 <div id="id_div" onclick="settings_controller.toggle_display();"></div>
-<div id="bottom_slider"><input type="range" min="1" max="10" step="1" style="width:100%; padding:0;"></input></div>
+<div id="bottom_slider"><input id="bottom_slider_widget" type="range" min="1" max="10" step="1" value="8" style="width:100%; padding:0;" onChange="WOD_success_engine();"></div>
 <div id="settings_div">
-    <div id="settings_random_div" class="settings_blocks">
+    <div id="settings_state_div" class="settings_blocks">
 	<fieldset class="fieldset">
 	<legend>Program State</legend>
-        <input id="settings_state_queue" type="radio" name="state" onclick='settings_controller.toggle("queue");'> Queue the Dice</input><br>
-        <input id="settings_state_immediate" type="radio" name="state" onclick='settings_controller.toggle("immediate");'> Roll Imediately</input><br>
+        <input id="settings_state_queue" type="radio" name="state" onclick='settings_controller.toggle("queue");'> Queue the Dice<br>
+        <input id="settings_state_immediate" type="radio" name="state" onclick='settings_controller.toggle("immediate");'> Roll Imediately<br>
 	</fieldset>
     </div>
     <div id="settings_random_div" class="settings_blocks">
 	<fieldset class="fieldset">
 	<legend>Random Engine</legend>
-        <input id="settings_random_standard" type="radio" name="random" onclick='settings_controller.toggle("standard");'> Standard</input><br>
-        <input id="settings_random_curve" type="radio" name="random" onclick='settings_controller.toggle("curve");'> Curve</input><br>
-        <input id="settings_random_org" type="radio" name="random" onclick='settings_controller.toggle("org");'> Random.org</input>	
+        <input id="settings_random_standard" type="radio" name="random" onclick='settings_controller.toggle("standard");'> Standard<br>
+        <input id="settings_random_curve" type="radio" name="random" onclick='settings_controller.toggle("curve");'> Curve<br>
+        <input id="settings_random_org" type="radio" name="random" onclick='settings_controller.toggle("org");'> Random.org	
 	</fieldset>
     </div>
     <div id="settings_highlight_div" class="settings_blocks">
 	<fieldset class="fieldset">
 	<legend>Highlight</legend>
-        <input id="settings_highlight_high" type="checkbox" onclick='settings_controller.toggle("high");'> High</input><input class="transparent_bg" id="settings_highlight_high_color" type="color" onChange='settings_controller.color("high");'></input><br>
-	<input id="settings_highlight_low" type="checkbox" onclick='settings_controller.toggle("low");'> Low</input><input class="transparent_bg" id="settings_highlight_low_color" type="color" onChange='settings_controller.color("low");'></input><br>
-        <input id="settings_highlight_reroll" type="checkbox" onclick='settings_controller.toggle("reroll_highlight");'> re-rolls</input><input class="transparent_bg" id="settings_highlight_reroll_color" type="color" onChange='settings_controller.color("reroll");'></input><br>
+        <input id="settings_highlight_high" type="checkbox" onclick='settings_controller.toggle("high");'> High<input class="transparent_bg" id="settings_highlight_high_color" type="color" onChange='settings_controller.color("high");'><br>
+	<input id="settings_highlight_low" type="checkbox" onclick='settings_controller.toggle("low");'> Low<input class="transparent_bg" id="settings_highlight_low_color" type="color" onChange='settings_controller.color("low");'><br>
+        <input id="settings_highlight_reroll" type="checkbox" onclick='settings_controller.toggle("reroll_highlight");'> re-rolls<input class="transparent_bg" id="settings_highlight_reroll_color" type="color" onChange='settings_controller.color("reroll");'><br>
 	</fieldset>
     </div>
     <div id="settings_cheat_div" class="settings_blocks">
 	<fieldset class="fieldset">
 		<legend>Cheating</legend>
-		<input id="settings_tapping_checkbox" type="checkbox" onclick='settings_controller.toggle("tapping");'>Dice Tapping</input>
+		<input id="settings_tapping_checkbox" type="checkbox" onclick='settings_controller.toggle("tapping");'>Dice Tapping
 	</fieldset>
     </div>
-    <div id="settings_game_engine_div" class="settings_blocks">
+    <!--<div id="settings_game_engine_div" class="settings_blocks">
 	<fieldset class="fieldset">
 	<legend>Game Engine</legend>
-        <input id="settings_game_engine" type="radio" name="game" onclick='settings_controller.toggle("none");'> None</input><br>
-        <input id="settings_game_engine" type="radio" name="game" onclick='settings_controller.toggle("immediate");'> World of Darkness</input><br>
+        <input id="settings_game_engine" type="radio" name="game" onclick='settings_controller.toggle("none");'> None<br>
+        <input id="settings_game_engine" type="radio" name="game" onclick='settings_controller.toggle("immediate");'> World of Darkness<br>
 	</fieldset>
-    </div>
+    </div>-->
     <div id="settings_session_div" class="settings_blocks">
 	<fieldset class="fieldset">
 	<legend>Session</legend>
 	Your session ID is: 
-	<input id="current_id" title="Current ID" type="text" onChange='settings_controller.change_id(this.value);'></input>
+	<input id="current_id" title="Current ID" type="text" onChange='settings_controller.change_id(this.value);'>
 	</fieldset>
     </div>
     <div id="settings_re-roll_div" class="settings_blocks">
 	<fieldset class="fieldset">
 	<legend>Re-Roll</legend>
-        <input id="settings_reroll_high" type="checkbox" onclick='settings_controller.toggle("reroll_high");'> Highest Value</input><br>
+        <input id="settings_reroll_high" type="checkbox" onclick='settings_controller.toggle("reroll_high");'> Highest Value<br>
 	<fieldset class="fieldset">
 	<legend>
 	Or choose die/dice
@@ -779,17 +866,21 @@ var settings_controller = {
 	</fieldset>
 	</fieldset>
     </div>
+    <div id="boot_me" class="settings_blocks">
+    Are things not working?<br>
+    <button onClick="bootme();">Boot Me In The Head</button><br>
+    </div>
 </div>
 <div id="tap_die_rack">
 	<p>Choose what die to tap with</p>
-	<img id="tap_rack_d2" class="dice_rack" src="images/2_2.svg" onclick=""></img>
-	<img id="tap_rack_d4" class="dice_rack" src="images/4_4.svg" onclick=""></img>
-	<img id="tap_rack_d6" class="dice_rack" src="images/6_6.svg" onclick=""></img>
-	<img id="tap_rack_d8" class="dice_rack" src="images/8_8.svg" onclick=""></img>
-	<img id="tap_rack_d10" class="dice_rack" src="images/10_10.svg" onclick=""></img>
-	<img id="tap_rack_d12" class="dice_rack" src="images/12_12.svg" onclick=""></img>
-	<img id="tap_rack_d20" class="dice_rack" src="images/20_20.svg" onclick=""></img>
-	<img id="tap_rack_d100" class="dice_rack" src="images/100_100.svg" onclick=""></img>
+	<img alt="D2" id="tap_rack_d2" class="dice_rack" src="images/2_2.svg" onclick="">
+	<img alt="D4" id="tap_rack_d4" class="dice_rack" src="images/4_4.svg" onclick="">
+	<img alt="D6" id="tap_rack_d6" class="dice_rack" src="images/6_6.svg" onclick="">
+	<img alt="D8" id="tap_rack_d8" class="dice_rack" src="images/8_8.svg" onclick="">
+	<img alt="D10" id="tap_rack_d10" class="dice_rack" src="images/10_10.svg" onclick="">
+	<img alt="D12" id="tap_rack_d12" class="dice_rack" src="images/12_12.svg" onclick="">
+	<img alt="D20" id="tap_rack_d20" class="dice_rack" src="images/20_20.svg" onclick="">
+	<img alt="D100" id="tap_rack_d100" class="dice_rack" src="images/100_100.svg" onclick="">
 </div>
 <!--<div class="alert">TEST</div>-->
 <audio id="Pick_Up" src="audio/Pick_Up.mp3" preload="auto"></audio>
