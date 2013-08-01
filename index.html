@@ -9,7 +9,7 @@
     font-family : 'Copperplate';
     src : url('copperplate_becker_bold_cond.ttf') format ('truetype');
 }
-@-webkit-keyframes alert { from {
+/*@-webkit-keyframes alert { from {
     -webkit-transform: scale(2);
     opacity:1;
   }
@@ -35,7 +35,7 @@
     -webkit-animation-duration: 1s;
     -webkit-animation-name: alert;
     opacity:0;
-}
+}*/
 
 body {
     background-image: url("images/bg.png");
@@ -239,7 +239,7 @@ p {
 }
 </style>
 <script>
-"use strict";
+//"use strict";
 
 //////////////////////
 // Global Variables //
@@ -477,15 +477,13 @@ function queue_roll_engine() {
     }
 }
 //////////// Reroll Logic ////////////
-
 function reroll_me(type, result, index) {
-    //var highlight = highlight_engine(type, result);
+    var highlight = highlight_engine(type, result);
     $("result_div_" + index).removeAttribute("onclick");
     $("result_div_" + index).innerHTML = svg_engine(type, result, index, highlight, 0, 1); 
     new Proto_Die(type);
 }
 /////////// Die Tap Logic ////////////
-
 function tap_engine(die_value, result, index) {
     var i, highlight, reroll;
     $("tap_die_rack").style.display = "none";
@@ -680,7 +678,7 @@ var settings_controller = {
         localStorage.D_What_settings = JSON.stringify(settings);
     },
     get_local: function () {
-        if (localStorage.D_What_settings != undefined) {
+        if (localStorage.D_What_settings != undefined && localStorage.D_What_settings != '') {
             return JSON.parse(localStorage.D_What_settings);
         }
         return 0;
@@ -765,7 +763,6 @@ update_time_stamp : function () {
 	<img alt="D100" id="rack_d100" class="dice_rack" src="images/100_100.svg" onclick="new Proto_Die(100);">
 </div>
 <div id="appdiv1">
-<div id="queue_main_div"></div>
 	<fieldset id="queue_field">
 		<legend>Queue</legend>	
 		<div id="queue_div">
@@ -868,7 +865,7 @@ update_time_stamp : function () {
     </div>
     <div id="boot_me" class="settings_blocks">
     Are things not working?<br>
-    <button onClick="bootme();">Boot Me In The Head</button><br>
+    <button onclick="bootme();">Boot Me In The Head</button><br>
     </div>
 </div>
 <div id="tap_die_rack">
