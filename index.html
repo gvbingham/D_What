@@ -470,6 +470,16 @@ function queue_roll_engine() {
     total = 0;
     success = 0;
     index = 0;
+    roll_db = {
+        d2 : [],
+	d4 : [],
+        d6 : [],
+        d8 : [],
+        d10 : [],
+        d12 : [],
+        d20 : [],
+        d100 : []
+    };
     if (settings.state == "immediate") {
         for (i = 0; i <= length - 1; i++) {
             for (count = 1; count <= queue[types[i]]; count++) {
