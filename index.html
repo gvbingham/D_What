@@ -5,44 +5,11 @@
 <title>D-What???</title>
 <meta name="viewport" content="width=device-width">
 <style>
-@font-face {
-    font-family : 'Copperplate';
-    src : url('copperplate_becker_bold_cond.ttf') format ('truetype');
-}
-@-webkit-keyframes alert { from {
-    -webkit-transform: scale(2);
-    opacity:1;
-  }
-
-  to {
-    -webkit-transform: scale(0.1);
-    opacity:0;
-  }
-}
-.alert {
-    position:absolute;
-    z-index:200;
-    left:50%;
-    top:50%;
-    width:450px;
-    height:200px;
-    line-height:1;
-    margin-left:-225px;
-    margin-top:-100px;
-    color:red;
-    text-align:center;
-    font-size:1000%;
-    -webkit-animation-duration: 1s;
-    -webkit-animation-name: alert;
-    opacity:0;
-}
-
 body {
     background-image: url("images/bg.png");
     margin:0px;
     color:lightgrey;
     font-size:18px;
-    -webkit-tap-highlight-color:rgba(0,0,0,0);
     font-family:Copperplate;
 }
 input {
@@ -62,10 +29,6 @@ p {
 .fieldset {
     min-height:110px;
 }
-/*text {
-    stroke:#FFFFFF;
-    stroke-width:5px;
-}*/
 .transparent_bg {
     background-color:transparent;
 }
@@ -254,9 +217,9 @@ p {
 //////////////////////
 // Global Variables //
 //////////////////////
-var $ = function (id) {
-    return document.getElementById(id);
-};
+//var $ = function (id) {
+//    return document.getElementById(id);
+//};
 var index = 0;
 var total = 0;
 var success = 0;
@@ -313,19 +276,27 @@ var roll_db = {
 // Dice Logic Core //
 /////////////////////
 
-
 function random_engine(die_type, count) {
     var xmlhttp, temp, i;
     if (settings.random == "org" && count == undefined) {
         xmlhttp = new XMLHttpRequest();
         xmlhttp.open("GET", "http://www.random.org/integers/?num=1&min=1&max=" + die_type + "&col=1&base=10&format=plain&rnd=new", false);
         xmlhttp.send();
+        if (xmlhttp.status != '200') {
+            window.alert("There seems to be something wrong with your connection to random.org or random.org is down.\n\nStatus: "+xmlhttp.status+" \n Status Text: "+xmlhttp.statusText+"\n\nPlease try putting this string of text into your browser bar and see if you get a number in return: \n\nhttp://www.random.org/integers/?num=1&min=1&max=" + die_type + "&col=1&base=10&format=plain&rnd=new");
+	    return
+        }
+	
         return parseInt(xmlhttp.responseText, 10);
     }
     if (settings.random == "org" && count != undefined) {
         xmlhttp = new XMLHttpRequest();
         xmlhttp.open("GET", "http://www.random.org/integers/?num=" + count + "&min=1&max=" + die_type + "&col=1&base=10&format=plain&rnd=new", false);
         xmlhttp.send();
+        if (xmlhttp.status != '200') {
+            window.alert("There seems to be something wrong with your connection to random.org or random.org is down.\n\nStatus: "+xmlhttp.status+" \n Status Text: "+xmlhttp.statusText+"\n\nPlease try putting this string of text into your browser bar and see if you get a number in return: \n\nhttp://www.random.org/integers/?num=" + count + "&min=1&max=" + die_type + "&col=1&base=10&format=plain&rnd=new");
+            return
+        }
         temp = xmlhttp.responseText.split("\n");
         for (i = 0; i <= temp.length - 1; i++) {
             temp[i] = parseInt(temp[i], 10);
@@ -432,41 +403,41 @@ function Proto_Die(arg, queue, tap) { // I build a die object
     total += this.result;
     success += (this.result >= settings.slider_value) ? 1 : 0;
     if (tap != 1) {
-        $("result_div").innerHTML += this.svg;
+        document.getElementById("result_div").innerHTML += this.svg;
     }
-    $("big_top").innerHTML = (settings.big_top == "total") ? total : success;
+    document.getElementById("big_top").innerHTML = (settings.big_top == "total") ? total : success;
     roll_db["d" + this.die_value].push(this.result);
 }
 ///////////// Queue Logic ////////////////
 function queue_engine(die_type, action) {
     var count;
     if (action == "add") {
-        $("queue_d" + die_type + "_div").style.display = "block";
-        count = parseInt($("queue_d" + die_type + "_count").innerHTML.slice(1), 10);
+        document.getElementById("queue_d" + die_type + "_div").style.display = "block";
+        count = parseInt(document.getElementById("queue_d" + die_type + "_count").innerHTML.slice(1), 10);
         if (count == "" || isNaN(count) == true) {
             count = 1;
         } else {
             count += 1;
         }
         queue[die_type] += 1;
-        $("queue_d" + die_type + "_count").innerHTML = "x" + count;
+        document.getElementById("queue_d" + die_type + "_count").innerHTML = "x" + count;
     }
     if (action == "remove") {
-        count = parseInt($("queue_d" + die_type + "_count").innerHTML.slice(1), 10);
+        count = parseInt(document.getElementById("queue_d" + die_type + "_count").innerHTML.slice(1), 10);
         if (count == "" || isNaN(count) == true || count == 1) {
             count = 0;
-            $("queue_d" + die_type + "_div").style.display = "none";
+            document.getElementById("queue_d" + die_type + "_div").style.display = "none";
         } else {
             count -= 1;
         }
         queue[die_type] -= 1;
-        $("queue_d" + die_type + "_count").innerHTML = "x" + count;
+        document.getElementById("queue_d" + die_type + "_count").innerHTML = "x" + count;
     }
 }
 
 function queue_roll_engine() {
     var i, count;
-    $("result_div").innerHTML = '';
+    document.getElementById("result_div").innerHTML = '';
     total = 0;
     success = 0;
     index = 0;
@@ -507,19 +478,19 @@ function queue_roll_engine() {
 //////////// Reroll Logic ////////////
 function reroll_me(type, result, index) {
     var highlight = highlight_engine(type, result);
-    $("result_div_" + index).removeAttribute("onclick");
-    $("result_div_" + index).innerHTML = svg_engine(type, result, index, highlight, 0, 1); 
+    document.getElementById("result_div_" + index).removeAttribute("onclick");
+    document.getElementById("result_div_" + index).innerHTML = svg_engine(type, result, index, highlight, 0, 1); 
     new Proto_Die(type);
 }
 /////////// Die Tap Logic ////////////
 function tap_engine(die_value, result, index) {
     var i, highlight, reroll;
-    $("tap_die_rack").style.display = "none";
+    document.getElementById("tap_die_rack").style.display = "none";
     if (tap_die_value == '') {
         for (i = 0; i <= length - 1; i++) {
-            $("tap_rack_d" + types[i]).setAttribute("onclick", 'tap_die_value = ' + types[i] + '; tap_engine(' + die_value + ', ' + result + ', ' + index + ');');
+            document.getElementById("tap_rack_d" + types[i]).setAttribute("onclick", 'tap_die_value = ' + types[i] + '; tap_engine(' + die_value + ', ' + result + ', ' + index + ');');
         }
-        $("tap_die_rack").style.display = "block";
+        document.getElementById("tap_die_rack").style.display = "block";
         return;
     }
     if (Math.floor(Math.random() * 10) + 1 <= 3) {
@@ -528,9 +499,9 @@ function tap_engine(die_value, result, index) {
         result = random_engine(die_value);
         highlight = highlight_engine(die_value, result);
         reroll = reroll_engine(die_value, result);
-        $("result_div_" + index).innerHTML = svg_engine(die_value, result, index, highlight, 0, 1);
+        document.getElementById("result_div_" + index).innerHTML = svg_engine(die_value, result, index, highlight, 0, 1);
         if (reroll == 1) {
-            $("result_div_" + index).setAttribute("onclick", 'reroll_me(' + die_value + ', ' + result + ', ' + index + ');');
+            document.getElementById("result_div_" + index).setAttribute("onclick", 'reroll_me(' + die_value + ', ' + result + ', ' + index + ');');
         }
     }
     new Proto_Die(tap_die_value);
@@ -544,32 +515,32 @@ function tap_engine(die_value, result, index) {
 function state_engine() {
     var i;
     if (settings.state == "immediate") {
-        $("small_bottom_left").style.display = "none";
-        $("queue_field").style.display = "none";
-        $("big_bottom").style.backgroundImage = 'url("images/clear.svg")';
-        $("big_bottom").setAttribute("onclick", "clear_engine();");
+        document.getElementById("small_bottom_left").style.display = "none";
+        document.getElementById("queue_field").style.display = "none";
+        document.getElementById("big_bottom").style.backgroundImage = 'url("images/clear.svg")';
+        document.getElementById("big_bottom").setAttribute("onclick", "clear_engine();");
         for (i = 0; i <= length - 1; i++) {
-            $("rack_d" + types[i]).setAttribute("onclick", "new Proto_Die(" + types[i] + ");");
+            document.getElementById("rack_d" + types[i]).setAttribute("onclick", "new Proto_Die(" + types[i] + ");");
         }
     } else if (settings.state == "queue") {
-        $("small_bottom_left").style.display = "block";
-        $("queue_field").style.display = "block";
-        $("big_bottom").style.backgroundImage = 'url("images/roll.svg")';
-        $("big_bottom").setAttribute("onclick", "queue_roll_engine();");
+        document.getElementById("small_bottom_left").style.display = "block";
+        document.getElementById("queue_field").style.display = "block";
+        document.getElementById("big_bottom").style.backgroundImage = 'url("images/roll.svg")';
+        document.getElementById("big_bottom").setAttribute("onclick", "queue_roll_engine();");
         for (i = 0; i <= length - 1; i++) {
-            $("rack_d" + types[i]).setAttribute("onclick", "queue_engine(" + types[i] + ", \"add\");");
+            document.getElementById("rack_d" + types[i]).setAttribute("onclick", "queue_engine(" + types[i] + ", \"add\");");
         }
     }
 }
 
 function game_engine() {
     if (settings.game == "none") {
-        $("bottom_slider").style.display = "none";
-        $("slider_number").style.display = "none";
+        document.getElementById("bottom_slider").style.display = "none";
+        document.getElementById("slider_number").style.display = "none";
 	settings.big_top = "total";
     } else if (settings.game == "WOD") {
-        $("bottom_slider").style.display = "block";
-        $("slider_number").style.display = "block";
+        document.getElementById("bottom_slider").style.display = "block";
+        document.getElementById("slider_number").style.display = "block";
 	settings.big_top = "success";
         WOD_success_engine();	
     }
@@ -582,11 +553,11 @@ function clear_engine() {
     total = 0;
     success = 0;
     index = 0;
-    $("result_div").innerHTML = "";
-    $("big_top").innerHTML = "Total";
+    document.getElementById("result_div").innerHTML = "";
+    document.getElementById("big_top").innerHTML = "Total";
     for (i = 0; i <= length - 1; i++) {
-        $("queue_d" + types[i] + "_count").innerHTML = "";
-        $("queue_d" + types[i] + "_div").style.display = "none";
+        document.getElementById("queue_d" + types[i] + "_count").innerHTML = "";
+        document.getElementById("queue_d" + types[i] + "_div").style.display = "none";
     }
     queue = {
         2: 0,
@@ -620,35 +591,35 @@ var settings_controller = {
             settings = local;
         }
         //Random
-        $("settings_random_standard").checked = (settings.random == "standard") ? true : false;
-        $("settings_random_org").checked = (settings.random == "org") ? true : false;
+        document.getElementById("settings_random_standard").checked = (settings.random == "standard") ? true : false;
+        document.getElementById("settings_random_org").checked = (settings.random == "org") ? true : false;
         //Highlight
-        $("settings_highlight_high").checked = (settings.highlight_high == 1) ? true : false;
-        $("settings_highlight_low").checked = (settings.highlight_low == 1) ? true : false;
-        $("settings_highlight_reroll").checked = (settings.highlight_reroll == 1) ? true : false;
+        document.getElementById("settings_highlight_high").checked = (settings.highlight_high == 1) ? true : false;
+        document.getElementById("settings_highlight_low").checked = (settings.highlight_low == 1) ? true : false;
+        document.getElementById("settings_highlight_reroll").checked = (settings.highlight_reroll == 1) ? true : false;
         //Reroll
-        $("settings_reroll_high").checked = (settings.re_roll_high == 1) ? true : false;
-        $("current_id").value = localStorage.D_What_id;
+        document.getElementById("settings_reroll_high").checked = (settings.re_roll_high == 1) ? true : false;
+        document.getElementById("current_id").value = localStorage.D_What_id;
         //Cheat
-        $("settings_tapping_checkbox").checked = (settings.dice_tapping == 1) ? true : false;
+        document.getElementById("settings_tapping_checkbox").checked = (settings.dice_tapping == 1) ? true : false;
         //Color
-        $("settings_highlight_high_color").value = settings.highlight_high_color;
-        $("settings_highlight_low_color").value = settings.highlight_low_color;
-        $("settings_highlight_reroll_color").value = settings.highlight_reroll_color;
+        document.getElementById("settings_highlight_high_color").value = settings.highlight_high_color;
+        document.getElementById("settings_highlight_low_color").value = settings.highlight_low_color;
+        document.getElementById("settings_highlight_reroll_color").value = settings.highlight_reroll_color;
         //State
-        $("settings_state_queue").checked = (settings.state == "queue") ? true : false;
-        $("settings_state_immediate").checked = (settings.state == "immediate") ? true : false;
+        document.getElementById("settings_state_queue").checked = (settings.state == "queue") ? true : false;
+        document.getElementById("settings_state_immediate").checked = (settings.state == "immediate") ? true : false;
         state_engine();
         //WOD
-        $("bottom_slider_widget").value = settings.slider_value;
-        $("settings_game_engine_none").checked = (settings.game == "none") ? true : false;
-        $("settings_game_engine_WOD").checked = (settings.game == "WOD") ? true : false;
+        document.getElementById("bottom_slider_widget").value = settings.slider_value;
+        document.getElementById("settings_game_engine_none").checked = (settings.game == "none") ? true : false;
+        document.getElementById("settings_game_engine_WOD").checked = (settings.game == "WOD") ? true : false;
 	game_engine();
 
         for (i = 0; i <= settings.re_roll_list.length - 1; i++) {
             temp += settings.re_roll_list[i];
         }
-        $("list_reroll_these").innerHTML = temp;
+        document.getElementById("list_reroll_these").innerHTML = temp;
     },
     toggle: function (arg) {
         if (arg == "high") {
@@ -681,21 +652,21 @@ var settings_controller = {
     },
     color: function (arg) {
         if (arg == "high") {
-            settings.highlight_high_color = $("settings_highlight_high_color").value;
+            settings.highlight_high_color = document.getElementById("settings_highlight_high_color").value;
         }
         if (arg == "low") {
-            settings.highlight_low_color = $("settings_highlight_low_color").value;
+            settings.highlight_low_color = document.getElementById("settings_highlight_low_color").value;
         }
         if (arg == "reroll") {
-            settings.highlight_reroll_color = $("settings_highlight_reroll_color").value;
+            settings.highlight_reroll_color = document.getElementById("settings_highlight_reroll_color").value;
         }
         this.put_local();
     },
     toggle_display: function () {
-        if ($("settings_div").style.display == "none" || $("settings_div").style.display == "") {
-            $("settings_div").style.display = "block";
+        if (document.getElementById("settings_div").style.display == "none" || document.getElementById("settings_div").style.display == "") {
+            document.getElementById("settings_div").style.display = "block";
         } else {
-            $("settings_div").style.display = "none";
+            document.getElementById("settings_div").style.display = "none";
         }
         this.put_local();
     },
@@ -704,7 +675,7 @@ var settings_controller = {
         for (i = 0; i < x; i++) {
             html.push("<option>" + (i + 1) + "</option>");
         }
-        $("settings_reroll_value").innerHTML = html;
+        document.getElementById("settings_reroll_value").innerHTML = html;
     },
     add_reroll: function (die_type, value) {
         die_type = die_type.slice(1);
@@ -726,7 +697,7 @@ var settings_controller = {
     clear_reroll: function () {
         settings.re_roll_these = {};
         settings.re_roll_list = [];
-        $("list_reroll_these").innerHTML = "";
+        document.getElementById("list_reroll_these").innerHTML = "";
         this.put_local();
     },
     put_local: function () {
@@ -747,7 +718,7 @@ var settings_controller = {
 function WOD_success_engine() {
     settings.slider_value = document.getElementById("bottom_slider_widget").value;
     settings_controller.put_local();
-    $("slider_number").innerHTML = settings.slider_value;
+    document.getElementById("slider_number").innerHTML = settings.slider_value;
 }
 
 ////////////////////////
@@ -900,7 +871,7 @@ var session = {
 	  <option value="D20">D20</option>
 	  <option value="D100">D100</option>
 	</select>
-	<select id="settings_reroll_value" onChange='settings_controller.add_reroll($("settings_reroll_type").options[$("settings_reroll_type").selectedIndex].text, this.options[this.selectedIndex].text);'>
+	<select id="settings_reroll_value" onChange='settings_controller.add_reroll(document.getElementById("settings_reroll_type").options[document.getElementById("settings_reroll_type").selectedIndex].text, this.options[this.selectedIndex].text);'>
 	  <option>Choose One</option>
 	  <option>1</option>
 	  <option>2</option>
