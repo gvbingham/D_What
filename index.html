@@ -348,9 +348,9 @@ function reroll_engine(die_value, result) {
 /////////// HTML and SVG Logic ///////////
 function div_engine(die_value, result, index, reroll) {
     if (settings.dice_tapping == 1 && reroll != 1) {
-        onclick = ' onclick="tap_engine(' + die_value + ', ' + result + ', ' + index + ');" ';
+        onclick = ' onClick="tap_engine(' + die_value + ', ' + result + ', ' + index + ');" ';
     } else if (reroll == 1) {
-        onclick = ' onclick="reroll_me(' + die_value + ', ' + result + ', ' + index + ');" ';
+        onclick = ' onClick="reroll_me(' + die_value + ', ' + result + ', ' + index + ');" ';
     } else {
         onclick = '';
     }
@@ -478,7 +478,7 @@ function queue_roll_engine() {
 //////////// Reroll Logic ////////////
 function reroll_me(type, result, index) {
     var highlight = highlight_engine(type, result);
-    document.getElementById("result_div_" + index).removeAttribute("onclick");
+    document.getElementById("result_div_" + index).removeAttribute("onClick");
     document.getElementById("result_div_" + index).innerHTML = svg_engine(type, result, index, highlight, 0, 1); 
     new Proto_Die(type);
 }
@@ -488,7 +488,7 @@ function tap_engine(die_value, result, index) {
     document.getElementById("tap_die_rack").style.display = "none";
     if (tap_die_value == '') {
         for (i = 0; i <= length - 1; i++) {
-            document.getElementById("tap_rack_d" + types[i]).setAttribute("onclick", 'tap_die_value = ' + types[i] + '; tap_engine(' + die_value + ', ' + result + ', ' + index + ');');
+            document.getElementById("tap_rack_d" + types[i]).setAttribute("onClick", 'tap_die_value = ' + types[i] + '; tap_engine(' + die_value + ', ' + result + ', ' + index + ');');
         }
         document.getElementById("tap_die_rack").style.display = "block";
         return;
@@ -501,7 +501,7 @@ function tap_engine(die_value, result, index) {
         reroll = reroll_engine(die_value, result);
         document.getElementById("result_div_" + index).innerHTML = svg_engine(die_value, result, index, highlight, 0, 1);
         if (reroll == 1) {
-            document.getElementById("result_div_" + index).setAttribute("onclick", 'reroll_me(' + die_value + ', ' + result + ', ' + index + ');');
+            document.getElementById("result_div_" + index).setAttribute("onClick", 'reroll_me(' + die_value + ', ' + result + ', ' + index + ');');
         }
     }
     new Proto_Die(tap_die_value);
@@ -518,17 +518,17 @@ function state_engine() {
         document.getElementById("small_bottom_left").style.display = "none";
         document.getElementById("queue_field").style.display = "none";
         document.getElementById("big_bottom").style.backgroundImage = 'url("images/clear.svg")';
-        document.getElementById("big_bottom").setAttribute("onclick", "clear_engine();");
+        document.getElementById("big_bottom").setAttribute("onClick", "clear_engine();");
         for (i = 0; i <= length - 1; i++) {
-            document.getElementById("rack_d" + types[i]).setAttribute("onclick", "new Proto_Die(" + types[i] + ");");
+            document.getElementById("rack_d" + types[i]).setAttribute("onClick", "new Proto_Die(" + types[i] + ");");
         }
     } else if (settings.state == "queue") {
         document.getElementById("small_bottom_left").style.display = "block";
         document.getElementById("queue_field").style.display = "block";
         document.getElementById("big_bottom").style.backgroundImage = 'url("images/roll.svg")';
-        document.getElementById("big_bottom").setAttribute("onclick", "queue_roll_engine();");
+        document.getElementById("big_bottom").setAttribute("onClick", "queue_roll_engine();");
         for (i = 0; i <= length - 1; i++) {
-            document.getElementById("rack_d" + types[i]).setAttribute("onclick", "queue_engine(" + types[i] + ", \"add\");");
+            document.getElementById("rack_d" + types[i]).setAttribute("onClick", "queue_engine(" + types[i] + ", \"add\");");
         }
     }
 }
@@ -773,27 +773,27 @@ var session = {
 <body onload="session.get_id(); settings_controller.populate_settings();">
 <!--<body onload="layout.calcsize();" onResize="layout.calcsize();">-->
 <div id="available_dice_div">
-	<img alt="D2" id="rack_d2" class="dice_rack" src="images/2_2.svg" onclick="new Proto_Die(2);">
-	<img alt="D4" id="rack_d4" class="dice_rack" src="images/4_4.svg" onclick="new Proto_Die(4);">
-	<img alt="D6" id="rack_d6" class="dice_rack" src="images/6_6.svg" onclick="new Proto_Die(6);">
-	<img alt="D8" id="rack_d8" class="dice_rack" src="images/8_8.svg" onclick="new Proto_Die(8);">
-	<img alt="D10" id="rack_d10" class="dice_rack" src="images/10_10.svg" onclick="new Proto_Die(10);">
-	<img alt="D12" id="rack_d12" class="dice_rack" src="images/12_12.svg" onclick="new Proto_Die(12);">
-	<img alt="D20" id="rack_d20" class="dice_rack" src="images/20_20.svg" onclick="new Proto_Die(20);">
-	<img alt="D100" id="rack_d100" class="dice_rack" src="images/100_100.svg" onclick="new Proto_Die(100);">
+	<img alt="D2" id="rack_d2" class="dice_rack" src="images/2_2.svg" onClick="new Proto_Die(2);">
+	<img alt="D4" id="rack_d4" class="dice_rack" src="images/4_4.svg" onClick="new Proto_Die(4);">
+	<img alt="D6" id="rack_d6" class="dice_rack" src="images/6_6.svg" onClick="new Proto_Die(6);">
+	<img alt="D8" id="rack_d8" class="dice_rack" src="images/8_8.svg" onClick="new Proto_Die(8);">
+	<img alt="D10" id="rack_d10" class="dice_rack" src="images/10_10.svg" onClick="new Proto_Die(10);">
+	<img alt="D12" id="rack_d12" class="dice_rack" src="images/12_12.svg" onClick="new Proto_Die(12);">
+	<img alt="D20" id="rack_d20" class="dice_rack" src="images/20_20.svg" onClick="new Proto_Die(20);">
+	<img alt="D100" id="rack_d100" class="dice_rack" src="images/100_100.svg" onClick="new Proto_Die(100);">
 </div>
 <div id="appdiv1">
 	<fieldset id="queue_field">
 		<legend>Queue</legend>	
 		<div id="queue_div">
-		<div class="queue_div" id="queue_d2_div"><img alt="D2" class="queue_img" src="images/2_2.svg" onclick='queue_engine(2, "remove");'><div class="queue_count" id="queue_d2_count"></div></div>
-		<div class="queue_div" id="queue_d4_div"><img alt="D4" class="queue_img" src="images/4_4.svg" onclick='queue_engine(4, "remove");'><div class="queue_count" id="queue_d4_count"></div></div>
-		<div class="queue_div" id="queue_d6_div"><img alt="D6" class="queue_img" src="images/6_6.svg" onclick='queue_engine(6, "remove");'><div class="queue_count" id="queue_d6_count"></div></div>
-		<div class="queue_div" id="queue_d8_div"><img alt="D8" class="queue_img" src="images/8_8.svg" onclick='queue_engine(8, "remove");'><div class="queue_count" id="queue_d8_count"></div></div>
-		<div class="queue_div" id="queue_d10_div"><img alt="D10" class="queue_img" src="images/10_10.svg" onclick='queue_engine(10, "remove");'><div class="queue_count" id="queue_d10_count"></div></div>
-		<div class="queue_div" id="queue_d12_div"><img alt="D12" class="queue_img" src="images/12_12.svg" onclick='queue_engine(12, "remove");'><div class="queue_count" id="queue_d12_count"></div></div>
-		<div class="queue_div" id="queue_d20_div"><img alt="D20" class="queue_img" src="images/20_20.svg" onclick='queue_engine(20, "remove");'><div class="queue_count" id="queue_d20_count"></div></div>
-		<div class="queue_div" id="queue_d100_div"><img alt="D100" class="queue_img" src="images/100_100.svg" onclick='queue_engine(100, "remove");'><div class="queue_count" id="queue_d100_count"></div></div>
+		<div class="queue_div" id="queue_d2_div"><img alt="D2" class="queue_img" src="images/2_2.svg" onClick='queue_engine(2, "remove");'><div class="queue_count" id="queue_d2_count"></div></div>
+		<div class="queue_div" id="queue_d4_div"><img alt="D4" class="queue_img" src="images/4_4.svg" onClick='queue_engine(4, "remove");'><div class="queue_count" id="queue_d4_count"></div></div>
+		<div class="queue_div" id="queue_d6_div"><img alt="D6" class="queue_img" src="images/6_6.svg" onClick='queue_engine(6, "remove");'><div class="queue_count" id="queue_d6_count"></div></div>
+		<div class="queue_div" id="queue_d8_div"><img alt="D8" class="queue_img" src="images/8_8.svg" onClick='queue_engine(8, "remove");'><div class="queue_count" id="queue_d8_count"></div></div>
+		<div class="queue_div" id="queue_d10_div"><img alt="D10" class="queue_img" src="images/10_10.svg" onClick='queue_engine(10, "remove");'><div class="queue_count" id="queue_d10_count"></div></div>
+		<div class="queue_div" id="queue_d12_div"><img alt="D12" class="queue_img" src="images/12_12.svg" onClick='queue_engine(12, "remove");'><div class="queue_count" id="queue_d12_count"></div></div>
+		<div class="queue_div" id="queue_d20_div"><img alt="D20" class="queue_img" src="images/20_20.svg" onClick='queue_engine(20, "remove");'><div class="queue_count" id="queue_d20_count"></div></div>
+		<div class="queue_div" id="queue_d100_div"><img alt="D100" class="queue_img" src="images/100_100.svg" onClick='queue_engine(100, "remove");'><div class="queue_count" id="queue_d100_count"></div></div>
 		</div>
 	</fieldset>
 	<fieldset id="result_field">
@@ -804,46 +804,46 @@ var session = {
 <div id="big_top" class="big_side_button" title="Total">Total</div>
 <div id="small_top_left" class="small_side_button"></div>
 <div id="small_top_right" class="small_side_button"></div>
-<div id="big_bottom" class="big_side_button" title="Roll" onclick=""></div>
+<div id="big_bottom" class="big_side_button" title="Roll" onClick=""></div>
 <div id="small_bottom_right" class="small_side_button"></div>
-<div id="small_bottom_left" class="small_side_button" title="clear" onclick="clear_engine();"></div>
-<div id="id_div" onclick="settings_controller.toggle_display();"></div>
+<div id="small_bottom_left" class="small_side_button" title="clear" onClick="clear_engine();"></div>
+<div id="id_div" onClick="settings_controller.toggle_display();"></div>
 <div id="bottom_slider"><input id="bottom_slider_widget" type="range" min="1" max="10" step="1" value="8" style="width:100%; padding:0;" onChange="WOD_success_engine();"></div>
 <div id="slider_number" class="small_side_button"></div>
 <div id="settings_div">
     <div id="settings_state_div" class="settings_blocks">
 	<fieldset class="fieldset">
 	<legend>Program State</legend>
-        <input id="settings_state_queue" type="radio" name="state" onclick='settings_controller.toggle("queue");'> Queue the Dice<br>
-        <input id="settings_state_immediate" type="radio" name="state" onclick='settings_controller.toggle("immediate");'> Roll Imediately<br>
+        <input id="settings_state_queue" type="radio" name="state" onClick='settings_controller.toggle("queue");'> Queue the Dice<br>
+        <input id="settings_state_immediate" type="radio" name="state" onClick='settings_controller.toggle("immediate");'> Roll Imediately<br>
 	</fieldset>
     </div>
     <div id="settings_random_div" class="settings_blocks">
 	<fieldset class="fieldset">
 	<legend>Random Engine</legend>
-        <input id="settings_random_standard" type="radio" name="random" onclick='settings_controller.toggle("standard");'> Standard<br>
-        <input id="settings_random_org" type="radio" name="random" onclick='settings_controller.toggle("org");'> Random.org	
+        <input id="settings_random_standard" type="radio" name="random" onClick='settings_controller.toggle("standard");'> Standard<br>
+        <input id="settings_random_org" type="radio" name="random" onClick='settings_controller.toggle("org");'> Random.org	
 	</fieldset>
     </div>
     <div id="settings_highlight_div" class="settings_blocks">
 	<fieldset class="fieldset">
 	<legend>Highlight</legend>
-        <input id="settings_highlight_high" type="checkbox" onclick='settings_controller.toggle("high");'> High<input class="transparent_bg" id="settings_highlight_high_color" type="color" onChange='settings_controller.color("high");'><br>
-	<input id="settings_highlight_low" type="checkbox" onclick='settings_controller.toggle("low");'> Low<input class="transparent_bg" id="settings_highlight_low_color" type="color" onChange='settings_controller.color("low");'><br>
-        <input id="settings_highlight_reroll" type="checkbox" onclick='settings_controller.toggle("reroll_highlight");'> re-rolls<input class="transparent_bg" id="settings_highlight_reroll_color" type="color" onChange='settings_controller.color("reroll");'><br>
+        <input id="settings_highlight_high" type="checkbox" onClick='settings_controller.toggle("high");'> High<br><input class="transparent_bg" id="settings_highlight_high_color" type="text" onChange='settings_controller.color("high");'><br>
+	<input id="settings_highlight_low" type="checkbox" onClick='settings_controller.toggle("low");'> Low<br><input class="transparent_bg" id="settings_highlight_low_color" type="text" onChange='settings_controller.color("low");'><br>
+        <input id="settings_highlight_reroll" type="checkbox" onClick='settings_controller.toggle("reroll_highlight");'> re-rolls<br><input class="transparent_bg" id="settings_highlight_reroll_color" type="text" onChange='settings_controller.color("reroll");'><br>
 	</fieldset>
     </div>
     <div id="settings_cheat_div" class="settings_blocks">
 	<fieldset class="fieldset">
 		<legend>Cheating</legend>
-		<input id="settings_tapping_checkbox" type="checkbox" onclick='settings_controller.toggle("tapping");'>Dice Tapping
+		<input id="settings_tapping_checkbox" type="checkbox" onClick='settings_controller.toggle("tapping");'>Dice Tapping
 	</fieldset>
     </div>
     <div id="settings_game_engine_div" class="settings_blocks">
 	<fieldset class="fieldset">
 	<legend>Game Engine</legend>
-        <input id="settings_game_engine_none" type="radio" name="game" onclick='settings_controller.toggle("none");'> None<br>
-        <input id="settings_game_engine_WOD" type="radio" name="game" onclick='settings_controller.toggle("WOD");'> WOD<br>
+        <input id="settings_game_engine_none" type="radio" name="game" onClick='settings_controller.toggle("none");'> None<br>
+        <input id="settings_game_engine_WOD" type="radio" name="game" onClick='settings_controller.toggle("WOD");'> WOD<br>
 	</fieldset>
     </div>
     <div id="settings_session_div" class="settings_blocks">
@@ -856,7 +856,7 @@ var session = {
     <div id="settings_re-roll_div" class="settings_blocks">
 	<fieldset class="fieldset">
 	<legend>Re-Roll</legend>
-        <input id="settings_reroll_high" type="checkbox" onclick='settings_controller.toggle("reroll_high");'> Highest Value<br>
+        <input id="settings_reroll_high" type="checkbox" onClick='settings_controller.toggle("reroll_high");'> Highest Value<br>
 	<fieldset class="fieldset">
 	<legend>
 	Or choose die/dice
@@ -876,7 +876,7 @@ var session = {
 	  <option>1</option>
 	  <option>2</option>
 	</select>
-	<button onclick='settings_controller.clear_reroll();'>Clear</button>
+	<button onClick='settings_controller.clear_reroll();'>Clear</button>
 	<hr>
 	<div id="list_reroll_these">
 	</div>
@@ -886,14 +886,14 @@ var session = {
 </div>
 <div id="tap_die_rack">
 	<p>Choose what die to tap with</p>
-	<img alt="D2" id="tap_rack_d2" class="dice_rack" src="images/2_2.svg" onclick="">
-	<img alt="D4" id="tap_rack_d4" class="dice_rack" src="images/4_4.svg" onclick="">
-	<img alt="D6" id="tap_rack_d6" class="dice_rack" src="images/6_6.svg" onclick="">
-	<img alt="D8" id="tap_rack_d8" class="dice_rack" src="images/8_8.svg" onclick="">
-	<img alt="D10" id="tap_rack_d10" class="dice_rack" src="images/10_10.svg" onclick="">
-	<img alt="D12" id="tap_rack_d12" class="dice_rack" src="images/12_12.svg" onclick="">
-	<img alt="D20" id="tap_rack_d20" class="dice_rack" src="images/20_20.svg" onclick="">
-	<img alt="D100" id="tap_rack_d100" class="dice_rack" src="images/100_100.svg" onclick="">
+	<img alt="D2" id="tap_rack_d2" class="dice_rack" src="images/2_2.svg" onClick="">
+	<img alt="D4" id="tap_rack_d4" class="dice_rack" src="images/4_4.svg" onClick="">
+	<img alt="D6" id="tap_rack_d6" class="dice_rack" src="images/6_6.svg" onClick="">
+	<img alt="D8" id="tap_rack_d8" class="dice_rack" src="images/8_8.svg" onClick="">
+	<img alt="D10" id="tap_rack_d10" class="dice_rack" src="images/10_10.svg" onClick="">
+	<img alt="D12" id="tap_rack_d12" class="dice_rack" src="images/12_12.svg" onClick="">
+	<img alt="D20" id="tap_rack_d20" class="dice_rack" src="images/20_20.svg" onClick="">
+	<img alt="D100" id="tap_rack_d100" class="dice_rack" src="images/100_100.svg" onClick="">
 </div>
 <!--<div class="alert">TEST</div>-->
 <audio id="Pick_Up" src="audio/Pick_Up.mp3" preload="auto"></audio>
