@@ -270,7 +270,7 @@ var roll_db = {
     d12 : [], 
     d20 : [],
     d100 : []
-}
+};
 
 /////////////////////
 // Dice Logic Core //
@@ -284,7 +284,7 @@ function random_engine(die_type, count) {
         xmlhttp.send();
         if (xmlhttp.status != '200') {
             window.alert("There seems to be something wrong with your connection to random.org or random.org is down.\n\nStatus: "+xmlhttp.status+" \n Status Text: "+xmlhttp.statusText+"\n\nPlease try putting this string of text into your browser bar and see if you get a number in return: \n\nhttp://www.random.org/integers/?num=1&min=1&max=" + die_type + "&col=1&base=10&format=plain&rnd=new");
-	    return
+            return;
         }
 	
         return parseInt(xmlhttp.responseText, 10);
@@ -295,7 +295,7 @@ function random_engine(die_type, count) {
         xmlhttp.send();
         if (xmlhttp.status != '200') {
             window.alert("There seems to be something wrong with your connection to random.org or random.org is down.\n\nStatus: "+xmlhttp.status+" \n Status Text: "+xmlhttp.statusText+"\n\nPlease try putting this string of text into your browser bar and see if you get a number in return: \n\nhttp://www.random.org/integers/?num=" + count + "&min=1&max=" + die_type + "&col=1&base=10&format=plain&rnd=new");
-            return
+            return;
         }
         temp = xmlhttp.responseText.split("\n");
         for (i = 0; i <= temp.length - 1; i++) {
