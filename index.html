@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <title>D-What???</title>
-<meta name="viewport" content="width=device-width">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<!--<meta name="viewport" content="width=device-width">-->
 <style>
 body {
     background-image: url("images/bg.png");
@@ -25,6 +26,12 @@ img, svg{
 p {
     margin-top:0px;
     margin-bottom:5px;
+}
+[type~=color] {
+    float:right;
+    margin:0px;
+    padding:0px;
+    height:20px;
 }
 .fieldset {
     min-height:110px;
@@ -213,32 +220,22 @@ p {
 </style>
 <script>
 //"use strict";
-
 //////////////////////
 // Global Variables //
 //////////////////////
-//var $ = function (id) {
-//    return document.getElementById(id);
-//};
-var index = 0;
-var total = 0;
-var success = 0;
+var everything = [];
 var queue = {
-    2: 0,
-    4: 0,
-    6: 0,
-    8: 0,
-    10: 0,
-    12: 0,
-    20: 0,
-    100: 0
+    2 : 0,
+    4 : 0,
+    6 : 0,
+    8 : 0,
+    10 : 0,
+    12 : 0,
+    20 : 0,
+    100 : 0
 };
 var types = Object.keys(queue);
-var length = types.length;
-var random_org_results = [];
-var onclick = '';
-var front_div = '';
-var back_div = '';
+var random_org_results = [];//Needed
 var tap_die_value = '';
 
 ///////////////////////////
@@ -252,8 +249,8 @@ var settings = {
     highlight_low_color: "#FF0000",
     highlight_reroll: 1,
     highlight_reroll_color: "#0000FF",
-    re_roll_list: [],
-    re_roll_these: {},
+    re_roll_list: [],//Visit
+    re_roll_these: {},//Visit
     re_roll_high: 1,
     dice_tapping: 0,
     state: "immediate",
@@ -262,21 +259,11 @@ var settings = {
     big_top: "total"
 };
 
-var roll_db = {
-    d2 : [],
-    d4 : [], 
-    d6 : [],
-    d10 : [],
-    d12 : [], 
-    d20 : [],
-    d100 : []
-};
-
 /////////////////////
 // Dice Logic Core //
 /////////////////////
 
-function random_engine(die_type, count) {
+function random_engine(die_type, count) {//SOLID//
     var xmlhttp, temp, i;
     if (settings.random == "org" && count == undefined) {
         xmlhttp = new XMLHttpRequest();
@@ -306,16 +293,7 @@ function random_engine(die_type, count) {
     return Math.floor(Math.random() * die_type) + 1;
 }
 
-function index_engine(arg) {
-    if (arg == "clear") {
-        index = 0;
-    } else {
-        index += 1;
-        return index;
-    }
-}
-
-function highlight_engine(die_value, result) {
+function highlight_engine(die_value, result) {//SOLID//
     if (settings.highlight_low == 1 && result == 1) {
         return settings.highlight_low_color;
     }
@@ -334,7 +312,134 @@ function highlight_engine(die_value, result) {
     return "#FFFFFF";
 }
 
-function reroll_engine(die_value, result) {
+/////////// HTML and SVG Logic ///////////
+function div_engine(die_value, result, index, reroll) {//SOLID//
+    var onclick;
+    if (settings.dice_tapping == 1 && reroll != 1) {
+        onclick = ' onClick="tap_me(' + die_value + ', ' + index + ');" ';
+    } else if (reroll == 1) {
+        onclick = ' onClick="reroll_me(' + die_value + ', ' + index + ');" ';
+    } else {
+        onclick = '';
+    }
+    return '<div class="svg_container" id="result_div_' + index + '" ' + onclick + '>';
+}
+function svg_engine(die_value, result, index, highlight) { //SOLID//
+    if (die_value == 2) {
+        return '<svg version="1.1" id="svg' + index + '" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><ellipse transform="matrix(0.7193 0.6947 -0.6947 0.7193 150.6956 -56.9414)" stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" cx="145.809" cy="158.006" rx="171.516" ry="98.164"/><ellipse transform="matrix(0.7193 0.6947 -0.6947 0.7193 144.9006 -69.9506)" stroke="' + highlight + '" stroke-width="4" stroke-miterlimit="10" cx="159.01" cy="144.33" rx="171.513" ry="98.161"/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">' + result + '</text></svg>';
+    }
+    if (die_value == 4) {
+        return '<svg version="1.1" id="svg' + index + '" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="8,275.239 150.306,28.76 292.611,275.239 "/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">' + result + '</text></svg>';
+    }
+    if (die_value == 6) {
+        return '<svg version="1.1" id="svg' + index + '" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><rect x="12.5" y="12.5" stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" width="276" height="276"/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">' + result + '</text></svg>';
+    }
+    if (die_value == 8) {
+        return '<svg version="1.1" id="svg' + index + '" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="38.154,204.812 150.979,9.398 263.802,204.812 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="38.154,208.536 150.979,291.669 263.802,208.536 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="267.873,203.952 251.5,80.5 155.048,8.537 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="144.874,9.537 48.422,81.5 32.049,204.952 "/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">' + result + '</text></svg>';
+    }
+    if (die_value == 10) {
+        return '<svg version="1.1" id="svg' + index + '" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="60.073,185.758 151.473,11.574 242.869,185.758 151.473,251.791 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="245.273,183.75 154.994,13.589 285.682,131.708 284.792,178.068 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="152.979,290.421 152.979,253.891 246.021,186.018 285.048,180.441 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="56.695,184.75 146.977,14.589 16.289,132.708 17.178,179.068 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="149.865,289.914 149.865,254.891 56.822,187.018 17.796,181.441 "/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">' + result + '</text></svg>';
+    }
+    if (die_value == 12) {
+        return '<svg version="1.1" id="svg' + index + '" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="97.465,224.479 64.364,122.609 151.02,59.651 237.676,122.609 204.575,224.479 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="153.469,57.673 153.469,10.91 234.18,37.008 285.668,106.737 240.124,120.632 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="240.131,123.472 284.604,109.023 284.725,193.852 234.318,264.363 207.027,225.346 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="204.262,226.986 231.75,264.814 151.109,291.143 68.472,264.999 97.148,226.979 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="95.478,225.939 67.998,263.77 18.037,195.213 17.369,108.541 62.383,124.065 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="61.823,120.371 17.354,105.927 67.117,37.227 149.34,9.807 148.484,57.417 "/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">' + result + '</text></svg>';
+    }
+    if (die_value == 20) {
+        return '<svg version="1.1" id="svg' + index + '" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="67.02,195.016 152.48,46.994 237.939,195.016 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="156.126,44.994 280.529,71.852 241.587,193.016 "/><polyline stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="63.376,193.016 24.432,71.852 148.835,44.994 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="237.943,198.66 152.48,292.967 67.02,198.66 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="154.125,41.349 155.126,3.493 279.529,68.946 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="150.463,42.048 150.275,3.192 26.191,69.246 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="240.473,199.615 274.087,219.098 155.086,293.919 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="243.377,195.648 276.919,215.264 283.215,74.831 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="63.589,198.689 30.013,218.242 149.181,292.809 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="61.34,195.748 27.743,215.27 21.827,74.823 "/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">' + result + '</text></svg>';
+    }
+    if (die_value == 100) {
+        return '<svg version="1.1" id="svg' + index + '" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><circle stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" cx="154.197" cy="151.097" r="141.5"/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">' + result + '</text></svg>';
+    }
+}
+////////////////////////////////////
+// The Prototype to rule them all //
+////////////////////////////////////
+function clear_me() {//SOLID//
+    everything = [];
+    queue = {
+        2 : 0,
+        4 : 0,
+        6 : 0,
+        8 : 0,
+        10 : 0,
+        12 : 0,
+        20 : 0,
+        100 : 0
+    };
+    write_queue_div();
+    write_result_div();
+    document.getElementById("big_top").innerHTML = "Total";
+}
+function write_result_div() {//SOLID//
+    var i;
+    var total = 0;
+    var result_html = "";
+    for (i = 0; i <= everything.length -1; i++){
+        result_html += everything[i]["die_div"] + everything[i]["die_svg"] + "</div>";
+        total += (settings.big_top == "total") ? everything[i]["die_result"] : everything[i]["success_value"];
+    } 
+    document.getElementById("tap_die_rack").style.display = "none";
+    document.getElementById("result_div").innerHTML = result_html;
+    document.getElementById("big_top").innerHTML = total;
+}
+function write_queue_div() {//SOLID//
+    var i;
+    var die_list = Object.keys(queue);
+    var count;
+    for (i = 0; i <= die_list.length -1; i++) {
+        count = (queue[die_list[i]] == 1) ? "" : "x" + queue[die_list[i]];
+        if (queue[die_list[i]] != 0) {
+            document.getElementById("queue_d" + die_list[i] + "_div").style.display = "block";
+            document.getElementById("queue_d" + die_list[i] + "_count").innerHTML = count;
+        }
+        if (queue[die_list[i]] == 0) {
+            document.getElementById("queue_d" + die_list[i] + "_div").style.display = "none";
+            document.getElementById("queue_d" + die_list[i] + "_count").innerHTML = count; 
+        }
+    }
+}
+function queue_engine(die_type, action) {
+    queue[die_type] -= 1;
+    write_queue_div();
+}
+function queue_roll() {//SOLID//
+    var i;
+    var count;
+    var die_list = Object.keys(queue);
+    everything = [];
+    if (settings.state == "immediate") {
+        clear_me();
+        return;
+    }
+    if (settings.state == "queue") {
+        for (i = 0; i <= die_list.length - 1; i++) {
+            if (settings.random == "org") {
+                if (queue[die_list[i]] != 0) {
+                    random_org_results = random_engine(die_list[i], queue[die_list[i]]);
+                }
+                for (count = 1; count <= queue[die_list[i]]; count++) {
+                    everything.push(new Proto_Die({ "die_type" : die_list[i], "queue" : count - 1}));
+                }
+            } else {
+                for (count = 1; count <= queue[die_list[i]]; count++) {
+                    everything.push(new Proto_Die({ "die_type" : die_list[i] }));
+                }
+            }
+        }
+    }
+    write_result_div();
+}
+function tap_engine(die_value, result) {//SOLID//
+    if (settings.dice_tapping == 1){
+        if (settings.re_roll_high == 1 && die_value == result) {
+            return 0; 
+        } else if (settings.re_roll_these[die_value] != undefined && settings.re_roll_these[die_value].indexOf(result.toString()) != -1) {
+            return 0;
+        } else {
+            return 1;
+        }  
+    }
+}
+function reroll_engine(die_value, result) {//SOLID//
     if (settings.re_roll_high == 1 && die_value == result) {
         return 1;
     }
@@ -345,195 +450,77 @@ function reroll_engine(die_value, result) {
     }
     return 0;
 }
-/////////// HTML and SVG Logic ///////////
-function div_engine(die_value, result, index, reroll) {
-    if (settings.dice_tapping == 1 && reroll != 1) {
-        onclick = ' onClick="tap_engine(' + die_value + ', ' + result + ', ' + index + ');" ';
-    } else if (reroll == 1) {
-        onclick = ' onClick="reroll_me(' + die_value + ', ' + result + ', ' + index + ');" ';
-    } else {
-        onclick = '';
-    }
-    front_div = '<div class="svg_container" id="result_div_' + index + '" ' + onclick + '>';
-    back_div = '</div>';
-}
-function svg_engine(die_value, result, index, highlight, reroll, no_div) {
-    if (no_div != 1) {
-        div_engine(die_value, result, index, reroll);
-    } else {
-        front_div = '';
-        back_div = '';
-    }
-    if (die_value == 2) {
-        return front_div + '<svg version="1.1" id="svg' + index + '" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><ellipse transform="matrix(0.7193 0.6947 -0.6947 0.7193 150.6956 -56.9414)" stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" cx="145.809" cy="158.006" rx="171.516" ry="98.164"/><ellipse transform="matrix(0.7193 0.6947 -0.6947 0.7193 144.9006 -69.9506)" stroke="' + highlight + '" stroke-width="4" stroke-miterlimit="10" cx="159.01" cy="144.33" rx="171.513" ry="98.161"/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">' + result + '</text></svg>' + back_div;
-    }
-    if (die_value == 4) {
-        return front_div + '<svg version="1.1" id="svg' + index + '" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="8,275.239 150.306,28.76 292.611,275.239 "/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">' + result + '</text></svg>' + back_div;
-    }
-    if (die_value == 6) {
-        return front_div + '<svg version="1.1" id="svg' + index + '" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><rect x="12.5" y="12.5" stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" width="276" height="276"/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">' + result + '</text></svg>' + back_div;
-    }
-    if (die_value == 8) {
-        return front_div + '<svg version="1.1" id="svg' + index + '" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="38.154,204.812 150.979,9.398 263.802,204.812 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="38.154,208.536 150.979,291.669 263.802,208.536 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="267.873,203.952 251.5,80.5 155.048,8.537 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="144.874,9.537 48.422,81.5 32.049,204.952 "/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">' + result + '</text></svg>' + back_div;
-    }
-    if (die_value == 10) {
-        return front_div + '<svg version="1.1" id="svg' + index + '" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="60.073,185.758 151.473,11.574 242.869,185.758 151.473,251.791 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="245.273,183.75 154.994,13.589 285.682,131.708 284.792,178.068 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="152.979,290.421 152.979,253.891 246.021,186.018 285.048,180.441 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="56.695,184.75 146.977,14.589 16.289,132.708 17.178,179.068 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="149.865,289.914 149.865,254.891 56.822,187.018 17.796,181.441 "/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">' + result + '</text></svg>' + back_div;
-    }
-    if (die_value == 12) {
-        return front_div + '<svg version="1.1" id="svg' + index + '" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="97.465,224.479 64.364,122.609 151.02,59.651 237.676,122.609 204.575,224.479 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="153.469,57.673 153.469,10.91 234.18,37.008 285.668,106.737 240.124,120.632 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="240.131,123.472 284.604,109.023 284.725,193.852 234.318,264.363 207.027,225.346 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="204.262,226.986 231.75,264.814 151.109,291.143 68.472,264.999 97.148,226.979 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="95.478,225.939 67.998,263.77 18.037,195.213 17.369,108.541 62.383,124.065 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="61.823,120.371 17.354,105.927 67.117,37.227 149.34,9.807 148.484,57.417 "/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">' + result + '</text></svg>' + back_div;
-    }
-    if (die_value == 20) {
-        return front_div + '<svg version="1.1" id="svg' + index + '" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="67.02,195.016 152.48,46.994 237.939,195.016 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="156.126,44.994 280.529,71.852 241.587,193.016 "/><polyline stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="63.376,193.016 24.432,71.852 148.835,44.994 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="237.943,198.66 152.48,292.967 67.02,198.66 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="154.125,41.349 155.126,3.493 279.529,68.946 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="150.463,42.048 150.275,3.192 26.191,69.246 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="240.473,199.615 274.087,219.098 155.086,293.919 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="243.377,195.648 276.919,215.264 283.215,74.831 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="63.589,198.689 30.013,218.242 149.181,292.809 "/><polygon stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" points="61.34,195.748 27.743,215.27 21.827,74.823 "/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">' + result + '</text></svg>' + back_div;
-    }
-    if (die_value == 100) {
-        return front_div + '<svg version="1.1" id="svg' + index + '" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="100%" height="100%" viewBox="0 0 300 300" enable-background="new 0 0 300 300" xml:space="preserve"><circle stroke="' + highlight + '" stroke-width="5" stroke-miterlimit="10" cx="154.197" cy="151.097" r="141.5"/><text y="150" x="150" text-anchor="middle" alignment-baseline="middle" fill="orange" font-family="\'Copperplate\'" font-size="150">' + result + '</text></svg>' + back_div;
-    }
-}
-////////////////////////////////////
-// The Prototype to rule them all //
-////////////////////////////////////
-
-function Proto_Die(arg, queue, tap) { // I build a die object
-    this.die_value = arg;
-    this.result = (queue == undefined || queue == 0) ? random_engine(this.die_value) : random_org_results[queue];
-    this.index = index_engine();
-    this.highlight = highlight_engine(this.die_value, this.result);
-    this.reroll = reroll_engine(this.die_value, this.result);
-    this.svg = svg_engine(this.die_value, this.result, this.index, this.highlight, this.reroll, this.no_div);
-    total += this.result;
-    success += (this.result >= settings.slider_value) ? 1 : 0;
-    if (tap != 1) {
-        document.getElementById("result_div").innerHTML += this.svg;
-    }
-    document.getElementById("big_top").innerHTML = (settings.big_top == "total") ? total : success;
-    roll_db["d" + this.die_value].push(this.result);
-}
-///////////// Queue Logic ////////////////
-function queue_engine(die_type, action) {
-    var count;
-    if (action == "add") {
-        document.getElementById("queue_d" + die_type + "_div").style.display = "block";
-        count = parseInt(document.getElementById("queue_d" + die_type + "_count").innerHTML.slice(1), 10);
-        if (count == "" || isNaN(count) == true) {
-            count = 1;
+function WOD_success_engine(result) {//SOLID//
+    if (settings.game == "WOD") {
+        if (result == 10) {
+            return 2;
+        } else if (document.getElementById("bottom_slider_widget").value <= result) {
+            return 1;
         } else {
-            count += 1;
+            return 0;
         }
+    }
+}
+function success_slider_engine() {//SOLID
+    settings.slider_value = document.getElementById("bottom_slider_widget").value;
+    settings_controller.put_local();
+    document.getElementById("slider_number").innerHTML = settings.slider_value;
+}
+function use_me(die_type, immediate) {//SOLID
+    if (settings.state == "immediate" || immediate == 1) {
+        everything.push(new Proto_Die({ "die_type" : die_type }));
+        write_result_div();
+    }
+    else {
         queue[die_type] += 1;
-        document.getElementById("queue_d" + die_type + "_count").innerHTML = "x" + count;
-    }
-    if (action == "remove") {
-        count = parseInt(document.getElementById("queue_d" + die_type + "_count").innerHTML.slice(1), 10);
-        if (count == "" || isNaN(count) == true || count == 1) {
-            count = 0;
-            document.getElementById("queue_d" + die_type + "_div").style.display = "none";
-        } else {
-            count -= 1;
-        }
-        queue[die_type] -= 1;
-        document.getElementById("queue_d" + die_type + "_count").innerHTML = "x" + count;
+        write_queue_div();
     }
 }
-
-function queue_roll_engine() {
-    var i, count;
-    document.getElementById("result_div").innerHTML = '';
-    total = 0;
-    success = 0;
-    index = 0;
-    roll_db = {
-        d2 : [],
-	d4 : [],
-        d6 : [],
-        d8 : [],
-        d10 : [],
-        d12 : [],
-        d20 : [],
-        d100 : []
-    };
-    if (settings.state == "immediate") {
-        for (i = 0; i <= length - 1; i++) {
-            for (count = 1; count <= queue[types[i]]; count++) {
-                new Proto_Die(types[i]);
-            }
-        }
-    }
-    if (settings.state == "queue") {
-        for (i = 0; i <= length - 1; i++) {
-            if (settings.random == "org") {
-                if (queue[types[i]] != 0) {
-                    random_org_results = random_engine(types[i], queue[types[i]]);
-                }
-                for (count = 1; count <= queue[types[i]]; count++) {
-                    new Proto_Die(types[i], count - 1);
-                }
-            } else {
-                for (count = 1; count <= queue[types[i]]; count++) {
-                    new Proto_Die(types[i]);
-                }
-            }
-        }
-    }
+function Proto_Die(arg) { //SOLID//arg, queue
+    this.die_type = arg.die_type;
+    this.die_result = (arg.queue == undefined || arg.queue == 0) ? random_engine(this.die_type) : random_org_results[arg.queue];
+    this.die_index = (arg.force_index_of != undefined) ? arg.force_index_of : everything.length; 
+    this.die_highlight_color = highlight_engine(this.die_type, this.die_result);
+    this.die_text_color = '#FFFFFF';//not attached yet
+    this.die_text_size = '1em';//not attached yet
+    this.can_reroll = reroll_engine(this.die_type, this.die_result);
+    this.can_tap = tap_engine(this.die_type, this.die_result); 
+    this.success_value = WOD_success_engine(this.die_result);
+    this.die_svg = svg_engine(this.die_type, this.die_result, this.die_index, this.die_highlight_color, this.can_reroll);
+    this.die_div = div_engine(this.die_type, this.die_result, this.die_index, this.can_reroll);
 }
 //////////// Reroll Logic ////////////
-function reroll_me(type, result, index) {
-    var highlight = highlight_engine(type, result);
-    document.getElementById("result_div_" + index).removeAttribute("onClick");
-    document.getElementById("result_div_" + index).innerHTML = svg_engine(type, result, index, highlight, 0, 1); 
-    new Proto_Die(type);
+function reroll_me(die_type, index) {//SOLID
+    everything[index]["die_div"] = '<div class="svg_container" id="result_div_'+index+'">';
+    everything.push(new Proto_Die({ "die_type" : die_type }));
+    write_result_div();
 }
 /////////// Die Tap Logic ////////////
-function tap_engine(die_value, result, index) {
-    var i, highlight, reroll;
-    document.getElementById("tap_die_rack").style.display = "none";
-    if (tap_die_value == '') {
-        for (i = 0; i <= length - 1; i++) {
-            document.getElementById("tap_rack_d" + types[i]).setAttribute("onClick", 'tap_die_value = ' + types[i] + '; tap_engine(' + die_value + ', ' + result + ', ' + index + ');');
-        }
-        document.getElementById("tap_die_rack").style.display = "block";
-        return;
-    }
+function tap_me(die_type, index) {//SOLID
+    document.getElementById("tap_die_rack").style.display = "block";
     if (Math.floor(Math.random() * 10) + 1 <= 3) {
-        total -= result;
-        success -= (result <= settings.slider_value) ? 1 : 0;
-        result = random_engine(die_value);
-        highlight = highlight_engine(die_value, result);
-        reroll = reroll_engine(die_value, result);
-        document.getElementById("result_div_" + index).innerHTML = svg_engine(die_value, result, index, highlight, 0, 1);
-        if (reroll == 1) {
-            document.getElementById("result_div_" + index).setAttribute("onClick", 'reroll_me(' + die_value + ', ' + result + ', ' + index + ');');
-        }
+        everything[index] = new Proto_Die({ "die_type" : die_type, "force_index_of" : index });
     }
-    new Proto_Die(tap_die_value);
-    tap_die_value = '';
 }
 
 /////////////////////////////
 // Interface State Changes //
 /////////////////////////////
 
-function state_engine() {
+function state_engine() {//SOLID
     var i;
     if (settings.state == "immediate") {
         document.getElementById("small_bottom_left").style.display = "none";
         document.getElementById("queue_field").style.display = "none";
         document.getElementById("big_bottom").style.backgroundImage = 'url("images/clear.svg")';
-        document.getElementById("big_bottom").setAttribute("onClick", "clear_engine();");
-        for (i = 0; i <= length - 1; i++) {
-            document.getElementById("rack_d" + types[i]).setAttribute("onClick", "new Proto_Die(" + types[i] + ");");
-        }
     } else if (settings.state == "queue") {
         document.getElementById("small_bottom_left").style.display = "block";
         document.getElementById("queue_field").style.display = "block";
         document.getElementById("big_bottom").style.backgroundImage = 'url("images/roll.svg")';
-        document.getElementById("big_bottom").setAttribute("onClick", "queue_roll_engine();");
-        for (i = 0; i <= length - 1; i++) {
-            document.getElementById("rack_d" + types[i]).setAttribute("onClick", "queue_engine(" + types[i] + ", \"add\");");
-        }
     }
 }
 
-function game_engine() {
+function game_engine() {//SOLID
     if (settings.game == "none") {
         document.getElementById("bottom_slider").style.display = "none";
         document.getElementById("slider_number").style.display = "none";
@@ -542,44 +529,11 @@ function game_engine() {
         document.getElementById("bottom_slider").style.display = "block";
         document.getElementById("slider_number").style.display = "block";
 	settings.big_top = "success";
-        WOD_success_engine();	
+        success_slider_engine();	
     }
 }
 
 //function alert_engine() {}
-
-function clear_engine() {
-    var i;
-    total = 0;
-    success = 0;
-    index = 0;
-    document.getElementById("result_div").innerHTML = "";
-    document.getElementById("big_top").innerHTML = "Total";
-    for (i = 0; i <= length - 1; i++) {
-        document.getElementById("queue_d" + types[i] + "_count").innerHTML = "";
-        document.getElementById("queue_d" + types[i] + "_div").style.display = "none";
-    }
-    queue = {
-        2: 0,
-        4: 0,
-        6: 0,
-        8: 0,
-        10: 0,
-        12: 0,
-        20: 0,
-        100: 0
-    };
-    roll_db = {
-        d2 : [],
-        d4 : [], 
-        d6 : [],
-        d10 : [],
-        d12 : [], 
-        d20 : [],
-        d100 : []
-    };
-}
-
 
 ///////////////////////
 // Settings Handling //
@@ -711,16 +665,6 @@ var settings_controller = {
     }
 };
 
-///////////////////////////////////////////
-// Gaming Engine Logic and State Changes //
-///////////////////////////////////////////
-
-function WOD_success_engine() {
-    settings.slider_value = document.getElementById("bottom_slider_widget").value;
-    settings_controller.put_local();
-    document.getElementById("slider_number").innerHTML = settings.slider_value;
-}
-
 ////////////////////////
 // Server and Session //
 ////////////////////////
@@ -773,14 +717,14 @@ var session = {
 <body onload="session.get_id(); settings_controller.populate_settings();">
 <!--<body onload="layout.calcsize();" onResize="layout.calcsize();">-->
 <div id="available_dice_div">
-	<img alt="D2" id="rack_d2" class="dice_rack" src="images/2_2.svg" onClick="new Proto_Die(2);">
-	<img alt="D4" id="rack_d4" class="dice_rack" src="images/4_4.svg" onClick="new Proto_Die(4);">
-	<img alt="D6" id="rack_d6" class="dice_rack" src="images/6_6.svg" onClick="new Proto_Die(6);">
-	<img alt="D8" id="rack_d8" class="dice_rack" src="images/8_8.svg" onClick="new Proto_Die(8);">
-	<img alt="D10" id="rack_d10" class="dice_rack" src="images/10_10.svg" onClick="new Proto_Die(10);">
-	<img alt="D12" id="rack_d12" class="dice_rack" src="images/12_12.svg" onClick="new Proto_Die(12);">
-	<img alt="D20" id="rack_d20" class="dice_rack" src="images/20_20.svg" onClick="new Proto_Die(20);">
-	<img alt="D100" id="rack_d100" class="dice_rack" src="images/100_100.svg" onClick="new Proto_Die(100);">
+	<img alt="D2" id="rack_d2" class="dice_rack" src="images/2_2.svg" onClick="use_me(2);">
+	<img alt="D4" id="rack_d4" class="dice_rack" src="images/4_4.svg" onClick="use_me(4);">
+	<img alt="D6" id="rack_d6" class="dice_rack" src="images/6_6.svg" onClick="use_me(6);">
+	<img alt="D8" id="rack_d8" class="dice_rack" src="images/8_8.svg" onClick="use_me(8);">
+	<img alt="D10" id="rack_d10" class="dice_rack" src="images/10_10.svg" onClick="use_me(10);">
+	<img alt="D12" id="rack_d12" class="dice_rack" src="images/12_12.svg" onClick="use_me(12);">
+	<img alt="D20" id="rack_d20" class="dice_rack" src="images/20_20.svg" onClick="use_me(20);">
+	<img alt="D100" id="rack_d100" class="dice_rack" src="images/100_100.svg" onClick="use_me(100);">
 </div>
 <div id="appdiv1">
 	<fieldset id="queue_field">
@@ -804,11 +748,11 @@ var session = {
 <div id="big_top" class="big_side_button" title="Total">Total</div>
 <div id="small_top_left" class="small_side_button"></div>
 <div id="small_top_right" class="small_side_button"></div>
-<div id="big_bottom" class="big_side_button" title="Roll" onClick=""></div>
+<div id="big_bottom" class="big_side_button" title="Roll" onClick="queue_roll();"></div>
 <div id="small_bottom_right" class="small_side_button"></div>
-<div id="small_bottom_left" class="small_side_button" title="clear" onClick="clear_engine();"></div>
+<div id="small_bottom_left" class="small_side_button" title="clear" onClick="clear_me();"></div>
 <div id="id_div" onClick="settings_controller.toggle_display();"></div>
-<div id="bottom_slider"><input id="bottom_slider_widget" type="range" min="1" max="10" step="1" value="8" style="width:100%; padding:0;" onChange="WOD_success_engine();"></div>
+<div id="bottom_slider"><input id="bottom_slider_widget" type="range" min="1" max="10" step="1" value="8" style="width:100%; padding:0;" onChange="success_slider_engine();"></div>
 <div id="slider_number" class="small_side_button"></div>
 <div id="settings_div">
     <div id="settings_state_div" class="settings_blocks">
@@ -828,9 +772,9 @@ var session = {
     <div id="settings_highlight_div" class="settings_blocks">
 	<fieldset class="fieldset">
 	<legend>Highlight</legend>
-        <input id="settings_highlight_high" type="checkbox" onClick='settings_controller.toggle("high");'> High<br><input class="transparent_bg" id="settings_highlight_high_color" type="text" onChange='settings_controller.color("high");'><br>
-	<input id="settings_highlight_low" type="checkbox" onClick='settings_controller.toggle("low");'> Low<br><input class="transparent_bg" id="settings_highlight_low_color" type="text" onChange='settings_controller.color("low");'><br>
-        <input id="settings_highlight_reroll" type="checkbox" onClick='settings_controller.toggle("reroll_highlight");'> re-rolls<br><input class="transparent_bg" id="settings_highlight_reroll_color" type="text" onChange='settings_controller.color("reroll");'><br>
+        <input id="settings_highlight_high" type="checkbox" onClick='settings_controller.toggle("high");'> High<input class="transparent_bg" id="settings_highlight_high_color" type="color" onChange='settings_controller.color("high");'><br>
+	<input id="settings_highlight_low" type="checkbox" onClick='settings_controller.toggle("low");'> Low<input class="transparent_bg" id="settings_highlight_low_color" type="color" onChange='settings_controller.color("low");'><br>
+        <input id="settings_highlight_reroll" type="checkbox" onClick='settings_controller.toggle("reroll_highlight");'> re-rolls<input class="transparent_bg" id="settings_highlight_reroll_color" type="color" onChange='settings_controller.color("reroll");'><br>
 	</fieldset>
     </div>
     <div id="settings_cheat_div" class="settings_blocks">
@@ -886,14 +830,14 @@ var session = {
 </div>
 <div id="tap_die_rack">
 	<p>Choose what die to tap with</p>
-	<img alt="D2" id="tap_rack_d2" class="dice_rack" src="images/2_2.svg" onClick="">
-	<img alt="D4" id="tap_rack_d4" class="dice_rack" src="images/4_4.svg" onClick="">
-	<img alt="D6" id="tap_rack_d6" class="dice_rack" src="images/6_6.svg" onClick="">
-	<img alt="D8" id="tap_rack_d8" class="dice_rack" src="images/8_8.svg" onClick="">
-	<img alt="D10" id="tap_rack_d10" class="dice_rack" src="images/10_10.svg" onClick="">
-	<img alt="D12" id="tap_rack_d12" class="dice_rack" src="images/12_12.svg" onClick="">
-	<img alt="D20" id="tap_rack_d20" class="dice_rack" src="images/20_20.svg" onClick="">
-	<img alt="D100" id="tap_rack_d100" class="dice_rack" src="images/100_100.svg" onClick="">
+	<img alt="D2" id="tap_rack_d2" class="dice_rack" src="images/2_2.svg" onClick="use_me(2, 1);">
+	<img alt="D4" id="tap_rack_d4" class="dice_rack" src="images/4_4.svg" onClick="use_me(4, 1);">
+	<img alt="D6" id="tap_rack_d6" class="dice_rack" src="images/6_6.svg" onClick="use_me(6, 1);">
+	<img alt="D8" id="tap_rack_d8" class="dice_rack" src="images/8_8.svg" onClick="use_me(8, 1);">
+	<img alt="D10" id="tap_rack_d10" class="dice_rack" src="images/10_10.svg" onClick="use_me(10, 1);">
+	<img alt="D12" id="tap_rack_d12" class="dice_rack" src="images/12_12.svg" onClick="use_me(12, 1);">
+	<img alt="D20" id="tap_rack_d20" class="dice_rack" src="images/20_20.svg" onClick="use_me(20, 1);">
+	<img alt="D100" id="tap_rack_d100" class="dice_rack" src="images/100_100.svg" onClick="use_me(100, 1);">
 </div>
 <!--<div class="alert">TEST</div>-->
 <audio id="Pick_Up" src="audio/Pick_Up.mp3" preload="auto"></audio>
